@@ -1,25 +1,29 @@
 # persona-agent-marketplace
 
-persona-agent 的官方商城仓库。应用从这里读取清单、下载 Skill（以及将来的 MCP / Agent 人物）。
+The official marketplace repository for persona-agent. The app reads the
+manifest and downloads Skills (and later MCP servers / Agent personas) from here.
 
-## 目录结构
+## Directory Structure
 
 ```
 persona-agent-marketplace/
 ├── skills/
-│   ├── index.json          ← Skill 清单
-│   └── <skill-folder>/     ← 每个 Skill 一个文件夹
+│   ├── index.json          ← Skill manifest
+│   └── <skill-folder>/     ← One folder per Skill
 │       └── SKILL.md
-├── mcp/                    ← 以后填
-└── agents/                 ← 以后填
+├── mcp/                    ← Future
+└── agents/                 ← Future
 ```
 
-## 发布一个 Skill
+## Publishing a Skill
 
-往 `skills/` 加一个文件夹，在 `skills/index.json` 里加一条，提 Pull Request 即可。详细的打包规则和提交步骤见 persona-agent 项目的《作者发布指南》。
+Add a folder under `skills/`, add an entry to `skills/index.json`, and open a
+Pull Request. For detailed packaging rules and submission steps, see the
+"Author Publishing Guide" in the persona-agent project.
 
-## 关键约束
+## Key Constraints
 
-- **文件夹名 === `SKILL.md` frontmatter 的 `name`**：两者必须完全相同（英文 kebab-case）。这是应用加载 Skill 的标识。
-- **清单的 `description` === frontmatter 的 `description`**：写成同一段文字。
-- 不要使用 Git LFS（会破坏应用的 raw 下载方式）。
+- **Folder name === the `name` in `SKILL.md` frontmatter**: the two must be
+  identical (lowercase kebab-case). This is the identifier the app uses to load a Skill.
+- **Manifest `description` === frontmatter `description`**: keep them as the same text.
+- Do not use Git LFS (it breaks the app's raw download mechanism).
