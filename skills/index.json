@@ -18,12 +18,38 @@
     "files": ["SKILL.md"]
   },
   {
-    "name": "科技新闻摘要",
-    "description": "抓取当日科技新闻并汇总成简报",
+    "name": "科技资讯追踪",
+    "description": "科技硬核技术信息追踪与聚合技能。当用户请求追踪AI/大模型/前沿技术动态、生成技术资讯摘要、或查询特定厂商的最新发布时使用。覆盖海外大厂、独角兽初创、国内厂商的官方技术博客和资讯渠道。",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/tech-news-digest",
     "version": "1.0.0",
     "path": "skills/tech-news-digest",
+    "files": ["SKILL.md"]
+  },
+  {
+    "name": "Skill Creator",
+    "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/skill-creator",
+    "version": "1.0.0",
+    "path": "skills/skill-creator",
+    "files": [
+      "SKILL.md",
+      "LICENSE.txt",
+      "references/output-patterns.md",
+      "references/workflows.md",
+      "scripts/init_skill.py",
+      "scripts/package_skill.py",
+      "scripts/quick_validate.py"
+    ]
+  },
+  {
+    "name": "TickTick 任务管理",
+    "description": "管理滴答清单 (TickTick) 任务的标准流程。包含任务创建原则（默认 Inbox、带时区 ISO 8601 格式、批量操作）、任务查询展示和错误处理。当用户需要创建、查询或管理任务时使用。",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/ticktick-management",
+    "version": "1.0.0",
+    "path": "skills/ticktick-management",
     "files": ["SKILL.md"]
   }
 ]
