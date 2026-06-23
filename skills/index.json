@@ -5,8 +5,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/diary-writing",
     "version": "1.0.0",
-    "path": "skills/diary-writing",
-    "files": ["SKILL.md"]
+    "path": "skills/diary-writing"
   },
   {
     "name": "天气查询",
@@ -14,8 +13,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/weather-query",
     "version": "1.0.0",
-    "path": "skills/weather-query",
-    "files": ["SKILL.md"]
+    "path": "skills/weather-query"
   },
   {
     "name": "科技资讯追踪",
@@ -23,8 +21,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/tech-news-digest",
     "version": "1.0.0",
-    "path": "skills/tech-news-digest",
-    "files": ["SKILL.md"]
+    "path": "skills/tech-news-digest"
   },
   {
     "name": "Skill Creator",
@@ -32,16 +29,7 @@
     "author": "Claude",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/skill-creator",
     "version": "1.0.0",
-    "path": "skills/skill-creator",
-    "files": [
-      "SKILL.md",
-      "LICENSE.txt",
-      "references/output-patterns.md",
-      "references/workflows.md",
-      "scripts/init_skill.py",
-      "scripts/package_skill.py",
-      "scripts/quick_validate.py"
-    ]
+    "path": "skills/skill-creator"
   },
   {
     "name": "TickTick 任务管理",
@@ -49,7 +37,6 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/ticktick-management",
     "version": "1.0.0",
-    "path": "skills/ticktick-management",
-    "files": ["SKILL.md"]
+    "path": "skills/ticktick-management"
   }
 ]
