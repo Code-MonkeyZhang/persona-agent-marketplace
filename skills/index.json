@@ -1,0 +1,29 @@
+[
+  {
+    "name": "日记助手",
+    "description": "帮你回顾一天、整理并写成结构化日记",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/diary-writing",
+    "version": "1.0.0",
+    "path": "skills/diary-writing",
+    "files": ["SKILL.md"]
+  },
+  {
+    "name": "天气查询",
+    "description": "查询指定城市的天气并给出穿衣建议",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/weather-query",
+    "version": "1.0.0",
+    "path": "skills/weather-query",
+    "files": ["SKILL.md"]
+  },
+  {
+    "name": "科技新闻摘要",
+    "description": "抓取当日科技新闻并汇总成简报",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/tech-news-digest",
+    "version": "1.0.0",
+    "path": "skills/tech-news-digest",
+    "files": ["SKILL.md"]
+  }
+]
