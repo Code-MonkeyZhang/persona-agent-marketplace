@@ -1,0 +1,5 @@
+{
+  "type": "stdio",
+  "command": "uvx",
+  "args": ["mcp-server-time"]
+}

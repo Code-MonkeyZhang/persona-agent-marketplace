@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.venv/
+src/cloud_music_mcp/storage/
+*.egg-info/
