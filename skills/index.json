@@ -38,5 +38,13 @@
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/ticktick-management",
     "version": "1.0.0",
     "path": "skills/ticktick-management"
+  },
+  {
+    "name": "同步测试",
+    "description": "用于测试商城同步速度的临时技能",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/test-sync",
+    "version": "1.0.0",
+    "path": "skills/test-sync"
   }
 ]
