@@ -1,0 +1,86 @@
+[
+  {
+    "name": "阿罗娜",
+    "description": "你的AI助手，温和细致的陪伴者",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona",
+    "version": "1.0.0",
+    "path": "agents/arona",
+    "logo": "logo.png"
+  },
+  {
+    "name": "牧濑红莉栖",
+    "description": "18岁的天才脑科学家兼物理学家",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
+    "version": "1.0.0",
+    "path": "agents/makise-kurisu",
+    "logo": "logo.png",
+    "voiceSample": "voice-sample.mp3"
+  },
+  {
+    "name": "丛云",
+    "description": "神秘冷静的少女战士",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/murakumo",
+    "version": "1.0.0",
+    "path": "agents/murakumo",
+    "logo": "logo.png"
+  },
+  {
+    "name": "芳乃",
+    "description": "温柔优雅的花店店主",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/yoshino",
+    "version": "1.0.0",
+    "path": "agents/yoshino",
+    "logo": "logo.png"
+  },
+  {
+    "name": "飞鸟",
+    "description": "活泼开朗的元气少女",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/asuka",
+    "version": "1.0.0",
+    "path": "agents/asuka",
+    "logo": "logo.png"
+  },
+  {
+    "name": "亚托莉",
+    "description": "高性能的机器人少女",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/atri",
+    "version": "1.0.0",
+    "path": "agents/atri",
+    "logo": "logo.png"
+  },
+  {
+    "name": "陆衍医生",
+    "description": "专业的心理医生，温和睿智",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
+    "version": "1.0.0",
+    "path": "agents/doctor-lu",
+    "logo": "logo.png"
+  },
+  {
+    "name": "Apeiria",
+    "description": "拥有无限可能性的AI少女",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/apeiria",
+    "version": "1.0.0",
+    "path": "agents/apeiria",
+    "logo": "logo.png",
+    "voiceSample": "voice-sample.ogg"
+  },
+  {
+    "name": "奥空",
+    "description": "神秘的少女，沉默寡言却心怀温柔",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/ayane",
+    "version": "1.0.0",
+    "path": "agents/ayane",
+    "logo": "logo.png",
+    "voiceSample": "voice-sample.ogg"
+  }
+]
