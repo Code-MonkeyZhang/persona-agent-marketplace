@@ -5,8 +5,7 @@
     "author": "Notion",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/notion",
     "version": "1.0.0",
-    "path": "mcp/notion",
-    "logo": "logo.svg"
+    "path": "mcp/notion"
   },
   {
     "name": "滴答清单",
@@ -14,8 +13,7 @@
     "author": "dida365",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/dida365",
     "version": "1.0.0",
-    "path": "mcp/dida365",
-    "logo": "logo.svg"
+    "path": "mcp/dida365"
   },
   {
     "name": "记忆图谱",
@@ -23,8 +21,7 @@
     "author": "Model Context Protocol",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/memory",
     "version": "0.6.3",
-    "path": "mcp/memory",
-    "logo": "logo.svg"
+    "path": "mcp/memory"
   },
   {
     "name": "逐步推理",
@@ -32,8 +29,7 @@
     "author": "Model Context Protocol",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/sequential-thinking",
     "version": "0.6.2",
-    "path": "mcp/sequential-thinking",
-    "logo": "logo.svg"
+    "path": "mcp/sequential-thinking"
   },
   {
     "name": "Everything",
@@ -41,8 +37,7 @@
     "author": "Model Context Protocol",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/everything",
     "version": "0.6.2",
-    "path": "mcp/everything",
-    "logo": "logo.svg"
+    "path": "mcp/everything"
   },
   {
     "name": "文件系统",
@@ -50,8 +45,7 @@
     "author": "Model Context Protocol",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/filesystem",
     "version": "0.6.3",
-    "path": "mcp/filesystem",
-    "logo": "logo.svg"
+    "path": "mcp/filesystem"
   },
   {
     "name": "网页抓取",
@@ -59,8 +53,7 @@
     "author": "Anthropic",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/fetch",
     "version": "0.6.3",
-    "path": "mcp/fetch",
-    "logo": "logo.svg"
+    "path": "mcp/fetch"
   },
   {
     "name": "时间查询",
@@ -68,8 +61,7 @@
     "author": "Mariusz Korzekwa",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/time",
     "version": "0.6.2",
-    "path": "mcp/time",
-    "logo": "logo.svg"
+    "path": "mcp/time"
   },
   {
     "name": "Git 操作",
@@ -77,8 +69,7 @@
     "author": "Anthropic",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/git",
     "version": "0.6.2",
-    "path": "mcp/git",
-    "logo": "logo.svg"
+    "path": "mcp/git"
   },
   {
     "name": "网易云音乐",

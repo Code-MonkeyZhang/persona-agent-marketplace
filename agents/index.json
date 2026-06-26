@@ -5,8 +5,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona",
     "version": "1.0.0",
-    "path": "agents/arona",
-    "logo": "logo.png"
+    "path": "agents/arona"
   },
   {
     "name": "牧濑红莉栖",
@@ -15,7 +14,6 @@
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
     "version": "1.0.0",
     "path": "agents/makise-kurisu",
-    "logo": "logo.png",
     "voiceSample": "voice-sample.mp3"
   },
   {
@@ -24,8 +22,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/murakumo",
     "version": "1.0.0",
-    "path": "agents/murakumo",
-    "logo": "logo.png"
+    "path": "agents/murakumo"
   },
   {
     "name": "芳乃",
@@ -33,8 +30,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/yoshino",
     "version": "1.0.0",
-    "path": "agents/yoshino",
-    "logo": "logo.png"
+    "path": "agents/yoshino"
   },
   {
     "name": "飞鸟",
@@ -42,8 +38,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/asuka",
     "version": "1.0.0",
-    "path": "agents/asuka",
-    "logo": "logo.png"
+    "path": "agents/asuka"
   },
   {
     "name": "亚托莉",
@@ -51,8 +46,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/atri",
     "version": "1.0.0",
-    "path": "agents/atri",
-    "logo": "logo.png"
+    "path": "agents/atri"
   },
   {
     "name": "陆衍医生",
@@ -60,8 +54,7 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
     "version": "1.0.0",
-    "path": "agents/doctor-lu",
-    "logo": "logo.png"
+    "path": "agents/doctor-lu"
   },
   {
     "name": "Apeiria",
@@ -70,7 +63,6 @@
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/apeiria",
     "version": "1.0.0",
     "path": "agents/apeiria",
-    "logo": "logo.png",
     "voiceSample": "voice-sample.ogg"
   },
   {
@@ -80,7 +72,6 @@
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/ayane",
     "version": "1.0.0",
     "path": "agents/ayane",
-    "logo": "logo.png",
     "voiceSample": "voice-sample.ogg"
   }
 ]
