@@ -16,62 +16,6 @@
     "path": "mcp/dida365"
   },
   {
-    "name": "记忆图谱",
-    "description": "基于知识图谱的记忆能力，让 Agent 记住实体和关系",
-    "author": "Model Context Protocol",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/memory",
-    "version": "0.6.3",
-    "path": "mcp/memory"
-  },
-  {
-    "name": "逐步推理",
-    "description": "让 Agent 一步步拆解复杂问题、动态调整思路",
-    "author": "Model Context Protocol",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/sequential-thinking",
-    "version": "0.6.2",
-    "path": "mcp/sequential-thinking"
-  },
-  {
-    "name": "Everything",
-    "description": "MCP 官方演示服务器，展示工具、资源、提示词等全部功能",
-    "author": "Model Context Protocol",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/everything",
-    "version": "0.6.2",
-    "path": "mcp/everything"
-  },
-  {
-    "name": "文件系统",
-    "description": "让 Agent 读写本地文件。安装后需要在设置 → MCP 里配置允许访问的目录",
-    "author": "Model Context Protocol",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/filesystem",
-    "version": "0.6.3",
-    "path": "mcp/filesystem"
-  },
-  {
-    "name": "网页抓取",
-    "description": "抓取网页内容并转换为 Markdown，供 Agent 阅读（需要 Python）",
-    "author": "Anthropic",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/fetch",
-    "version": "0.6.3",
-    "path": "mcp/fetch"
-  },
-  {
-    "name": "时间查询",
-    "description": "查询当前时间、时区转换（需要 Python）",
-    "author": "Mariusz Korzekwa",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/time",
-    "version": "0.6.2",
-    "path": "mcp/time"
-  },
-  {
-    "name": "Git 操作",
-    "description": "让 Agent 执行 Git 操作（status / diff / log 等）。安装后需要在设置 → MCP 里配置仓库路径（需要 Python）",
-    "author": "Anthropic",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/git",
-    "version": "0.6.2",
-    "path": "mcp/git"
-  },
-  {
     "name": "网易云音乐",
     "description": "搜索、播放、管理网易云音乐歌单。自研代码型 MCP，安装后 uv 会自动同步依赖",
     "author": "Code-MonkeyZhang",
