@@ -4,7 +4,6 @@
     "description": "帮你回顾一天、整理并写成结构化日记",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/diary-writing",
-    "version": "1.0.0",
     "path": "skills/diary-writing"
   },
   {
@@ -12,7 +11,6 @@
     "description": "查询指定城市的天气并给出穿衣建议",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/weather-query",
-    "version": "1.0.0",
     "path": "skills/weather-query"
   },
   {
@@ -20,7 +18,6 @@
     "description": "科技硬核技术信息追踪与聚合技能。当用户请求追踪AI/大模型/前沿技术动态、生成技术资讯摘要、或查询特定厂商的最新发布时使用。覆盖海外大厂、独角兽初创、国内厂商的官方技术博客和资讯渠道。",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/tech-news-digest",
-    "version": "1.0.0",
     "path": "skills/tech-news-digest"
   },
   {
@@ -28,7 +25,6 @@
     "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
     "author": "Claude",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/skill-creator",
-    "version": "1.0.0",
     "path": "skills/skill-creator"
   },
   {
@@ -36,7 +32,6 @@
     "description": "管理滴答清单 (TickTick) 任务的标准流程。包含任务创建原则（默认 Inbox、带时区 ISO 8601 格式、批量操作）、任务查询展示和错误处理。当用户需要创建、查询或管理任务时使用。",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/skills/ticktick-management",
-    "version": "1.0.0",
     "path": "skills/ticktick-management"
   }
 ]
