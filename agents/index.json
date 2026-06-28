@@ -15,54 +15,10 @@
     "voiceSample": "voice-sample.mp3"
   },
   {
-    "name": "丛云",
-    "description": "神秘冷静的少女战士",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/murakumo",
-    "path": "agents/murakumo"
-  },
-  {
-    "name": "芳乃",
-    "description": "温柔优雅的花店店主",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/yoshino",
-    "path": "agents/yoshino"
-  },
-  {
-    "name": "飞鸟",
-    "description": "活泼开朗的元气少女",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/asuka",
-    "path": "agents/asuka"
-  },
-  {
-    "name": "亚托莉",
-    "description": "高性能的机器人少女",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/atri",
-    "path": "agents/atri"
-  },
-  {
     "name": "陆衍医生",
     "description": "专业的心理医生，温和睿智",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
     "path": "agents/doctor-lu"
-  },
-  {
-    "name": "Apeiria",
-    "description": "拥有无限可能性的AI少女",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/apeiria",
-    "path": "agents/apeiria",
-    "voiceSample": "voice-sample.ogg"
-  },
-  {
-    "name": "奥空",
-    "description": "神秘的少女，沉默寡言却心怀温柔",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/ayane",
-    "path": "agents/ayane",
-    "voiceSample": "voice-sample.ogg"
   }
 ]
