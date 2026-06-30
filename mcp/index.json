@@ -19,6 +19,7 @@
     "author": "Code-MonkeyZhang",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/cloud-music-mcp",
     "path": "mcp/cloud-music-mcp",
-    "logo": "logo.png"
+    "logo": "logo.png",
+    "runtime": "uv"
   }
 ]
