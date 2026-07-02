@@ -10,14 +10,14 @@
   {
     "name": "滴答清单",
     "description": "滴答清单官方 MCP 服务",
-    "author": "TickTick Official",
+    "author": "TickTick365",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/dida365",
     "path": "mcp/dida365",
     "logo": "logo.png"
   },
   {
     "name": "滴答清单 (第三方)",
-    "description": "通过 AI 管理你的滴答清单任务，支持创建任务、项目、子任务和高级查询",
+    "description": "接入滴答清单管理你的日程",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced",
     "path": "mcp/ticktick-mcp-enhanced",
