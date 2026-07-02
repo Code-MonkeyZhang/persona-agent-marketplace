@@ -4,14 +4,25 @@
     "description": "访问你的 Notion 工作区，搜索和阅读页面",
     "author": "Notion",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/notion",
-    "path": "mcp/notion"
+    "path": "mcp/notion",
+    "logo": "logo.png"
   },
   {
     "name": "滴答清单",
-    "description": "滴答清单（TickTick / 滴答365）MCP 服务器",
-    "author": "dida365",
+    "description": "滴答清单官方 MCP 服务",
+    "author": "TickTick Official",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/dida365",
-    "path": "mcp/dida365"
+    "path": "mcp/dida365",
+    "logo": "logo.png"
+  },
+  {
+    "name": "滴答清单 (第三方)",
+    "description": "通过 AI 管理你的滴答清单任务，支持创建任务、项目、子任务和高级查询",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced",
+    "path": "mcp/ticktick-mcp-enhanced",
+    "logo": "logo.png",
+    "runtime": "uv"
   },
   {
     "name": "网易云音乐",
