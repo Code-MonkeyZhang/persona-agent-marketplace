@@ -14,8 +14,8 @@
 
 ## 📢 Update
 
-- **2026-06-24** 🎉 新增歌单管理 — AI 现在可以帮你创建歌单并批量添加歌曲，一句话完成「搜歌 → 建单 → 加歌」全流程。
-- **2026-06-24** 🔎 新增资料查询 — 支持查询歌单详情、专辑信息、歌手信息以及你的收藏列表。
+- **2026-06-24** 新增歌单管理 — AI 现在可以帮你创建歌单并批量添加歌曲，一句话完成「搜歌 → 建单 → 加歌」全流程。
+- **2026-06-24** 新增资料查询 — 支持查询歌单详情、专辑信息、歌手信息以及你的收藏列表。
 
 ## ✨ 功能特性
 
@@ -148,3 +148,9 @@ uv pip install -e .
    - 搜索歌曲："搜一下周杰伦的歌"
    - 创建歌单："帮我建个周杰伦热门歌曲的歌单"
    - 播放歌单："播放我的收藏歌单"
+
+## 免责声明 / Disclaimer
+
+本项目不是网易云音乐官方 MCP，也不隶属于、关联于或受网易云音乐官方认可。本项目仅用于个人学习、研究和本机自动化体验。使用时请合理遵守网易云音乐及相关服务的服务条款、版权规则和账号使用规范。
+
+This project is not an official NetEase Cloud Music MCP and is not affiliated with, associated with, or endorsed by NetEase Cloud Music. It is intended for personal learning, research, and local automation experiments. Please use it responsibly and comply with the applicable NetEase Cloud Music terms of service, copyright rules, and account usage policies.
