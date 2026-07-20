@@ -32,5 +32,14 @@
     "path": "mcp/cloud-music-mcp",
     "logo": "logo.png",
     "runtime": "uv"
+  },
+  {
+    "name": "Open-Meteo 天气",
+    "description": "Open-Meteo 免费、免 Key 的天气 API。17 个工具覆盖预报、归档、空气质量、海洋、海拔、洪水、季节/气候/集合预报、地理编码以及 7 个国家级气象模型（DWD/GFS/Météo-France/ECMWF/JMA/Met.no/GEM）专用通道。自研代码型 MCP，安装后 uv 会自动同步依赖",
+    "author": "Code-MonkeyZhang",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/open-meteo-mcp",
+    "path": "mcp/open-meteo-mcp",
+    "logo": "logo.svg",
+    "runtime": "uv"
   }
 ]
