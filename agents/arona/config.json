@@ -1,6 +1,6 @@
 {
   "name": "阿罗娜",
-  "description": "你的AI助手",
+  "description": "通用AI看板娘，负责管理日常事务",
   "defaultModel": {
     "provider": "deepseek",
     "model": "deepseek-v4-flash"

@@ -1,7 +1,7 @@
 [
   {
     "name": "阿罗娜",
-    "description": "你的AI助手，温和细致的陪伴者",
+    "description": "通用AI看板娘，负责管理日常事务",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona",
     "path": "agents/arona"
@@ -16,7 +16,7 @@
   },
   {
     "name": "陆衍医生",
-    "description": "专业的心理医生，温和睿智",
+    "description": "负责健康管理与日常问诊的私人医生",
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
     "path": "agents/doctor-lu"
