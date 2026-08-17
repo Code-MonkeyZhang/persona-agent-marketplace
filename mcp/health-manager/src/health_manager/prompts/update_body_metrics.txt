@@ -1,0 +1,7 @@
+记录或修改体征（体重/血压/心率/身高/称呼），部分更新：传哪个字段改哪个，没传的不动。
+
+- 体重 weight：kg，记录后返回与上次的对比。
+- 血压：systolic 收缩压 / diastolic 舒张压必须同时给；心率 heart_rate 可选，需与血压一并记。
+- 身高 height：cm。称呼 name：如张宇。
+- date 可选，默认今天；传过去某天即修改那天。
+- 例：“我70公斤” → update_body_metrics(weight=70)；“血压120/80心率70” → update_body_metrics(systolic=120, diastolic=80, heart_rate=70)；“身高175” → update_body_metrics(height=175)。

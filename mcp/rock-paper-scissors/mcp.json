@@ -1,0 +1,7 @@
+{
+  "type": "stdio",
+  "command": "uv",
+  "args": ["run", "--directory", "${SERVERS_DIR}/rock-paper-scissors", "rock-paper-scissors"],
+  "agentApp": true,
+  "supportedUI": ["desktop", "mobile"]
+}

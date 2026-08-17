@@ -1,0 +1,7 @@
+{
+  "type": "stdio",
+  "command": "uv",
+  "args": ["run", "--directory", "${SERVERS_DIR}/health-manager", "health-manager"],
+  "agentApp": true,
+  "supportedUI": ["desktop", "mobile"]
+}

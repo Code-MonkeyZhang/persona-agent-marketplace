@@ -1,45 +1,75 @@
 [
-  {
-    "name": "Notion",
-    "description": "Notion 官方 MCP 服务，支持访问/修改页面，以及搜索内容",
-    "author": "Notion",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/notion",
-    "path": "mcp/notion",
-    "logo": "logo.png"
-  },
-  {
-    "name": "滴答清单",
-    "description": "滴答清单官方 MCP 服务",
-    "author": "TickTick365",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/dida365",
-    "path": "mcp/dida365",
-    "logo": "logo.png"
-  },
-  {
-    "name": "滴答清单 (第三方)",
-    "description": "接入滴答清单管理你的日程",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced",
-    "path": "mcp/ticktick-mcp-enhanced",
-    "logo": "logo.png",
-    "runtime": "uv"
-  },
-  {
-    "name": "网易云音乐",
-    "description": "搜索、播放和管理网易云音乐歌单",
-    "author": "Code-MonkeyZhang",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/cloud-music-mcp",
-    "path": "mcp/cloud-music-mcp",
-    "logo": "logo.png",
-    "runtime": "uv"
-  },
-  {
-    "name": "天气",
-    "description": "查询地区详细天气、空气质量的强大工具",
-    "author": "Code-MonkeyZhang",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/open-meteo-mcp",
-    "path": "mcp/open-meteo-mcp",
-    "logo": "logo.svg",
-    "runtime": "uv"
-  }
+ {
+  "name": "Notion",
+  "description": "Notion 官方 MCP 服务，支持访问/修改页面，以及搜索内容",
+  "author": "Notion",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/notion",
+  "path": "mcp/notion",
+  "logo": "logo.png"
+ },
+ {
+  "name": "滴答清单",
+  "description": "滴答清单官方 MCP 服务",
+  "author": "TickTick365",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/dida365",
+  "path": "mcp/dida365",
+  "logo": "logo.png"
+ },
+ {
+  "name": "滴答清单 (第三方)",
+  "description": "接入滴答清单管理你的日程",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/ticktick-mcp-enhanced",
+  "path": "mcp/ticktick-mcp-enhanced",
+  "logo": "logo.png",
+  "runtime": "uv"
+ },
+ {
+  "name": "网易云音乐",
+  "description": "搜索、播放和管理网易云音乐歌单",
+  "author": "Code-MonkeyZhang",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/cloud-music-mcp",
+  "path": "mcp/cloud-music-mcp",
+  "logo": "logo.png",
+  "runtime": "uv"
+ },
+ {
+  "name": "天气",
+  "description": "查询地区详细天气、空气质量的强大工具",
+  "author": "Code-MonkeyZhang",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/open-meteo-mcp",
+  "path": "mcp/open-meteo-mcp",
+  "logo": "logo.svg",
+  "runtime": "uv"
+ },
+ {
+  "name": "剪刀石头布",
+  "description": "和 Agent 玩剪刀石头布（三局两胜）：面板上出拳，比分自动记录。",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/rock-paper-scissors",
+  "path": "mcp/rock-paper-scissors",
+  "logo": "icon.png",
+  "runtime": "uv",
+  "agentApp": true
+ },
+ {
+  "name": "番茄时钟",
+  "description": "专注计时器：面板上开始专注，开始/结束自动通知 Agent，累计统计一目了然。",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/pomodoro-timer",
+  "path": "mcp/pomodoro-timer",
+  "logo": "icon.png",
+  "runtime": "uv",
+  "agentApp": true
+ },
+ {
+  "name": "健康管理",
+  "description": "对话里随口记录体重、血压、心率和力量训练，面板自动更新趋势。",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/health-manager",
+  "path": "mcp/health-manager",
+  "logo": "icon.png",
+  "runtime": "uv",
+  "agentApp": true
+ }
 ]

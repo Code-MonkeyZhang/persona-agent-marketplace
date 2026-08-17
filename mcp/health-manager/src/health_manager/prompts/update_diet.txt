@@ -1,0 +1,5 @@
+按编号修改一条饮食记录，部分更新：传哪个字段改哪个，没传的不动。
+
+- entry_id 必填，来自 get_diet_log 返回里每条前面的 [编号]。
+- 常用于补填漏掉的碳水/蛋白质/脂肪，或修正卡路里、份量、餐别。
+- 例：get_diet_log 看到 [12] 豆浆 75 kcal，补宏量 → update_diet(entry_id=12, carbs=6, protein=4, fat=3)。

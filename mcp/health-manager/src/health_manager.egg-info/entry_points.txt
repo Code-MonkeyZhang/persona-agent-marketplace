@@ -1,0 +1,2 @@
+[console_scripts]
+health-manager = health_manager.__main__:main

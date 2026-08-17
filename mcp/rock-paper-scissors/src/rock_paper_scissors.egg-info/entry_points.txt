@@ -1,0 +1,2 @@
+[console_scripts]
+rock-paper-scissors = rock_paper_scissors.__main__:main

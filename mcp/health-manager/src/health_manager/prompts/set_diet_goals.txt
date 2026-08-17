@@ -1,0 +1,5 @@
+设置饮食目标，部分更新：传哪个改哪个。
+
+- goal：每日卡路里目标。
+- carbs/protein/fat：三大宏量目标（g），需同时提供，填了即切到手动模式。
+- 例：只设卡路里 → set_diet_goals(goal=1800)；设宏量 → set_diet_goals(carbs=225, protein=112, fat=50)。

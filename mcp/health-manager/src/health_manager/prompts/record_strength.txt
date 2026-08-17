@@ -1,0 +1,10 @@
+记录一条能力数据（某个动作某个指标的成绩）。录入后返回和上次同动作同指标的对比。
+
+- category 由用户归类或从动作推断，如上半身/下半身/有氧。
+- 动作名自由文本。如果和已有记录可能相同，优先用已记录的名称。
+- metric 自由文本，描述这组数据衡量什么，如最大重量/最多次数/用时/单次消耗。
+- unit 自由文本，用户没提时根据 metric 推定（kg/reps/s/kcal/min 等）。
+- 用户说"卧推最大重量 60kg" → record_strength(category=上半身, exercise=自由卧推, metric=最大重量, value=60, unit=kg)。
+- 用户说"俯卧撑做了 25 个" → record_strength(category=上半身, exercise=俯卧撑, metric=最多次数, value=25, unit=reps)。
+- 用户说"深蹲蹲了 100kg" → record_strength(category=下半身, exercise=深蹲, metric=最大重量, value=100, unit=kg)。
+- 用户说"爬楼梯消耗 300 卡" → record_strength(category=有氧, exercise=爬楼梯, metric=单次消耗, value=300, unit=kcal)。

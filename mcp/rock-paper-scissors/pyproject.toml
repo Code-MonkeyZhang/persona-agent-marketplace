@@ -1,0 +1,23 @@
+[project]
+name = "rock-paper-scissors"
+version = "0.1.0"
+description = "剪刀石头布 Agent App"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=2.0.0",
+    "uvicorn[standard]",
+]
+
+[project.scripts]
+rock-paper-scissors = "rock_paper_scissors.__main__:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["rock_paper_scissors*"]
+
+[tool.setuptools.package-data]
+rock_paper_scissors = ["../../ui/**/*", "../../icon.png"]

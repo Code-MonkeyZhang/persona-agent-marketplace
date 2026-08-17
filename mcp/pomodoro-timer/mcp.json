@@ -1,0 +1,7 @@
+{
+  "type": "stdio",
+  "command": "uv",
+  "args": ["run", "--directory", "${SERVERS_DIR}/pomodoro-timer", "pomodoro-timer"],
+  "agentApp": true,
+  "supportedUI": ["desktop", "mobile"]
+}

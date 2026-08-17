@@ -1,0 +1,2 @@
+[console_scripts]
+pomodoro-timer = pomodoro_timer.__main__:main
