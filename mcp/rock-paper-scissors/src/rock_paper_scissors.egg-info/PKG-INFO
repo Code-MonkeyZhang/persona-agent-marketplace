@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: rock-paper-scissors
-Version: 0.1.0
-Summary: 剪刀石头布 Agent App
-Requires-Python: >=3.10
-Requires-Dist: mcp>=2.0.0
-Requires-Dist: uvicorn[standard]
