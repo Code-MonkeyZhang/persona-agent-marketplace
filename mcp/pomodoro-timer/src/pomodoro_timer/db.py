@@ -51,6 +51,31 @@ DROP TABLE app_settings;
 ALTER TABLE app_settings_new RENAME TO app_settings;
 """
 
+# v3: duration_min → duration_sec for second-precision records.
+# Historical rows are backfilled by multiplying 60. Rebuild the table
+# (DROP TABLE also drops idx_focus_started, so recreate it after rename).
+_SCHEMA_V3 = """
+CREATE TABLE focus_sessions_new (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    started_at   TEXT NOT NULL,
+    ended_at     TEXT NOT NULL,
+    duration_sec INTEGER NOT NULL,
+    intent       TEXT DEFAULT '',
+    completed    INTEGER NOT NULL DEFAULT 1,
+    agent_id     TEXT DEFAULT '',
+    session_id   TEXT DEFAULT ''
+);
+INSERT INTO focus_sessions_new
+    (id, started_at, ended_at, duration_sec, intent, completed,
+     agent_id, session_id)
+    SELECT id, started_at, ended_at, duration_min * 60, intent,
+           completed, agent_id, session_id
+    FROM focus_sessions;
+DROP TABLE focus_sessions;
+ALTER TABLE focus_sessions_new RENAME TO focus_sessions;
+CREATE INDEX IF NOT EXISTS idx_focus_started ON focus_sessions(started_at);
+"""
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -78,12 +103,16 @@ class FocusDB:
             self._conn.executescript(_SCHEMA_V2)
             self._conn.execute("PRAGMA user_version = 2")
             log("INFO", "db_migrated", version=2)
+        if version < 3:
+            self._conn.executescript(_SCHEMA_V3)
+            self._conn.execute("PRAGMA user_version = 3")
+            log("INFO", "db_migrated", version=3)
 
     def record_session(
         self,
         started_at: str,
         ended_at: str,
-        duration_min: int,
+        duration_sec: int,
         intent: str,
         completed: bool,
         agent_id: str,
@@ -91,10 +120,10 @@ class FocusDB:
     ) -> None:
         self._conn.execute(
             "INSERT INTO focus_sessions "
-            "(started_at, ended_at, duration_min, intent, completed, "
+            "(started_at, ended_at, duration_sec, intent, completed, "
             "agent_id, session_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (
-                started_at, ended_at, duration_min, intent,
+                started_at, ended_at, duration_sec, intent,
                 1 if completed else 0, agent_id, session_id,
             ),
         )
@@ -131,20 +160,20 @@ class FocusDB:
     def get_stats(self) -> dict:
         """Return today and week aggregate stats (completed sessions only)."""
         today_row = self._conn.execute(
-            "SELECT COUNT(*) AS cnt, COALESCE(SUM(duration_min), 0) AS mins "
+            "SELECT COUNT(*) AS cnt, COALESCE(SUM(duration_sec), 0) AS secs "
             "FROM focus_sessions "
             "WHERE date(started_at) = date('now') AND completed = 1"
         ).fetchone()
         week_row = self._conn.execute(
-            "SELECT COUNT(*) AS cnt, COALESCE(SUM(duration_min), 0) AS mins "
+            "SELECT COUNT(*) AS cnt, COALESCE(SUM(duration_sec), 0) AS secs "
             "FROM focus_sessions "
             "WHERE date(started_at) >= date('now', '-6 days') AND completed = 1"
         ).fetchone()
         return {
             "today_count": today_row["cnt"],
-            "today_minutes": today_row["mins"],
+            "today_seconds": today_row["secs"],
             "week_count": week_row["cnt"],
-            "week_minutes": week_row["mins"],
+            "week_seconds": week_row["secs"],
         }
 
     def get_settings(self) -> dict:

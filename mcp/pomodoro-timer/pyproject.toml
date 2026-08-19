@@ -1,6 +1,6 @@
 [project]
 name = "pomodoro-timer"
-version = "0.1.0"
+version = "0.2.0"
 description = "番茄时钟 Agent App"
 requires-python = ">=3.10"
 dependencies = [

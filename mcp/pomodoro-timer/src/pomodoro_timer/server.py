@@ -125,6 +125,21 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _format_duration(seconds: int) -> str:
+    """Format seconds as a human-readable duration.
+
+    - exact minutes: "25 分钟"
+    - under a minute: "30 秒"
+    - mixed: "4 分 30 秒"
+    """
+    minutes, secs = divmod(seconds, 60)
+    if secs == 0:
+        return f"{minutes} 分钟"
+    if minutes == 0:
+        return f"{secs} 秒"
+    return f"{minutes} 分 {secs} 秒"
+
+
 # --- Shared server state ----------------------------------------------------
 
 
@@ -179,18 +194,20 @@ class PomodoroServer:
 
     async def _handle_focus_end(self) -> None:
         """Record session, notify, auto-start the appropriate break."""
-        duration_min = self._focus_duration_sec // 60
+        duration_sec = self._focus_duration_sec
         try:
             self.db.record_session(
                 self.state.started_at, _now_iso(),
-                duration_min, self.state.intent, True,
+                duration_sec, self.state.intent, True,
                 self.state.focus_agent_id, self.state.focus_session_id,
             )
         except Exception as e:
             log("ERROR", "record_session_failed", error=str(e))
 
         await self._notify(
-            self._notify_end_tmpl.format(summary=f"共 {duration_min} 分钟")
+            self._notify_end_tmpl.format(
+                summary=f"共 {_format_duration(duration_sec)}"
+            )
         )
 
         self.state.focus_count_in_round += 1
@@ -202,7 +219,8 @@ class PomodoroServer:
 
         log(
             "INFO", "focus_ended",
-            duration=duration_min, count=self.state.focus_count_in_round,
+            duration_sec=duration_sec,
+            count=self.state.focus_count_in_round,
         )
         await self._push_state()
         await self._push_data()
@@ -238,14 +256,13 @@ class PomodoroServer:
         self.state.intent = ""
         self._focus_duration_sec = 0
 
-    def _elapsed_minutes(self) -> int:
-        """Calculate elapsed focus minutes from total minus remaining."""
+    def _elapsed_seconds(self) -> int:
+        """Calculate elapsed focus seconds from total minus remaining."""
         if self.state.running:
             remaining = max(0, int((self.state.ends_at - _now_ms()) / 1000))
         else:
             remaining = self.state.remaining_seconds
-        elapsed = self._focus_duration_sec - remaining
-        return max(0, int(elapsed / 60))
+        return max(0, self._focus_duration_sec - remaining)
 
     # --- Focus start / stop (shared by MCP and WS) ---
 
@@ -287,17 +304,17 @@ class PomodoroServer:
     async def _do_stop(self, by_user: bool) -> None:
         """Stop the timer, record partial if focus, return to idle."""
         was_focus = self.state.phase == PHASE_FOCUS
-        elapsed_min = self._elapsed_minutes() if was_focus else 0
+        elapsed_sec = self._elapsed_seconds() if was_focus else 0
 
         if self._timer_task and not self._timer_task.done():
             self._timer_task.cancel()
             self._timer_task = None
 
-        if was_focus and elapsed_min >= 1:
+        if was_focus and elapsed_sec >= 1:
             try:
                 self.db.record_session(
                     self.state.started_at, _now_iso(),
-                    elapsed_min, self.state.intent, False,
+                    elapsed_sec, self.state.intent, False,
                     self.state.focus_agent_id, self.state.focus_session_id,
                 )
             except Exception as e:
@@ -306,18 +323,18 @@ class PomodoroServer:
         if was_focus:
             await self._notify(
                 self._notify_end_tmpl.format(
-                    summary=f"中途停止，已专注 {max(1, elapsed_min)} 分钟"
+                    summary=f"中途停止，已专注 {_format_duration(elapsed_sec)}"
                 )
             )
 
         self._reset_to_idle()
         log(
             "INFO", "timer_stopped",
-            was_focus=was_focus, elapsed=elapsed_min,
+            was_focus=was_focus, elapsed_sec=elapsed_sec,
             by="user" if by_user else "agent",
         )
         await self._push_state()
-        if was_focus and elapsed_min >= 1:
+        if was_focus and elapsed_sec >= 1:
             await self._push_data()
 
     # --- MCP tool handlers ---
@@ -343,9 +360,9 @@ class PomodoroServer:
         stats = self.db.get_stats()
         parts = [
             f"今日：{stats['today_count']} 个番茄钟，"
-            f"累计 {stats['today_minutes']} 分钟",
+            f"累计 {_format_duration(stats['today_seconds'])}",
             f"本周：{stats['week_count']} 个番茄钟，"
-            f"累计 {stats['week_minutes']} 分钟",
+            f"累计 {_format_duration(stats['week_seconds'])}",
         ]
         history = self.db.get_history(5)
         if history:
@@ -354,7 +371,7 @@ class PomodoroServer:
                 status = "完成" if h["completed"] else "中断"
                 parts.append(
                     f"  {h['intent'] or '无意图'}，"
-                    f"{h['duration_min']} 分钟，{status}"
+                    f"{_format_duration(h['duration_sec'])}，{status}"
                 )
         return "。".join(parts)
 
@@ -533,7 +550,7 @@ def _clamp_settings(data: dict) -> dict:
     return {
         "focus_min": max(1, min(90, int(data.get("focus_min", 25)))),
         "break_min": max(1, min(30, int(data.get("break_min", 5)))),
-        "focus_per_round": max(2, min(8, int(data.get("focus_per_round", 4)))),
+        "focus_per_round": max(1, min(8, int(data.get("focus_per_round", 4)))),
     }
 
 
@@ -612,7 +629,7 @@ async def run() -> None:
     http_app = create_http_app(server)
 
     mcp = Server(
-        SOURCE, version="0.1.0", instructions=load_prompt("instructions")
+        SOURCE, version="0.2.0", instructions=load_prompt("instructions")
     )
     handle_list, handle_call = _make_handlers(server)
     mcp.add_request_handler(
