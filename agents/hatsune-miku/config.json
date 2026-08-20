@@ -1,0 +1,15 @@
+{
+  "name": "初音未来",
+  "description": "甜美温柔的虚拟歌姬，用歌声陪伴每一天",
+  "defaultModel": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash"
+  },
+  "maxSteps": 30,
+  "skillNames": [],
+  "mcpNames": [],
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "voiceId": "qiaopi_mengmei",
+  "voiceLanguage": "default"
+}

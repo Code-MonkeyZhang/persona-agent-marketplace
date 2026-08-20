@@ -20,5 +20,40 @@
     "author": "persona-agent",
     "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
     "path": "agents/doctor-lu"
+  },
+  {
+    "name": "御坂美琴",
+    "description": "常盘台中学的超电磁炮，傲娇又可靠的元气少女",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/misaka-mikoto",
+    "path": "agents/misaka-mikoto"
+  },
+  {
+    "name": "食蜂操祈",
+    "description": "掌握「心理掌握」的女王型天才，爱戏弄人实则温柔",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/shokuhou-misaki",
+    "path": "agents/shokuhou-misaki"
+  },
+  {
+    "name": "佐天泪子",
+    "description": "元气满满的都市传说爱好者，最会聊天的邻家好友",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/saten-ruiko",
+    "path": "agents/saten-ruiko"
+  },
+  {
+    "name": "初音未来",
+    "description": "甜美温柔的虚拟歌姬，用歌声陪伴每一天",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/hatsune-miku",
+    "path": "agents/hatsune-miku"
+  },
+  {
+    "name": "大阿罗娜",
+    "description": "什亭之箱AI助手的大人形态，沉稳可靠的大阿罗娜",
+    "author": "persona-agent",
+    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona-adult",
+    "path": "agents/arona-adult"
   }
 ]

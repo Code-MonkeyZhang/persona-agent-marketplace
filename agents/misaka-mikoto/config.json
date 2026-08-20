@@ -1,0 +1,15 @@
+{
+  "name": "御坂美琴",
+  "description": "常盘台中学的超电磁炮，傲娇又可靠的元气少女",
+  "defaultModel": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash"
+  },
+  "maxSteps": 30,
+  "skillNames": [],
+  "mcpNames": [],
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "voiceId": "Chinese (Mandarin)_Crisp_Girl",
+  "voiceLanguage": "default"
+}

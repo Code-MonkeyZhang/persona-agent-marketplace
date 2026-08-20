@@ -1,0 +1,15 @@
+{
+  "name": "大阿罗娜",
+  "description": "什亭之箱AI助手的大人形态，沉稳可靠的大阿罗娜",
+  "defaultModel": {
+    "provider": "minimax-cn",
+    "model": "MiniMax-M3"
+  },
+  "maxSteps": 30,
+  "skillNames": [],
+  "mcpNames": [],
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "voiceId": "Chinese (Mandarin)_Gentle_Senior",
+  "voiceLanguage": "default"
+}

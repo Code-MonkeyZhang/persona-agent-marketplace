@@ -1,0 +1,15 @@
+{
+  "name": "食蜂操祈",
+  "description": "掌握「心理掌握」的女王型天才，爱戏弄人实则温柔",
+  "defaultModel": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash"
+  },
+  "maxSteps": 30,
+  "skillNames": [],
+  "mcpNames": [],
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "voiceId": "wumei_yujie",
+  "voiceLanguage": "default"
+}

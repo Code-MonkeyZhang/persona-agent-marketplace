@@ -1,0 +1,15 @@
+{
+  "name": "佐天泪子",
+  "description": "元气满满的都市传说爱好者，最会聊天的邻家好友",
+  "defaultModel": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash"
+  },
+  "maxSteps": 30,
+  "skillNames": [],
+  "mcpNames": [],
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "voiceId": "Arrogant_Miss",
+  "voiceLanguage": "default"
+}
