@@ -1,31 +1,35 @@
 [
-  {
-    "name": "阿罗娜",
-    "description": "通用AI看板娘，负责管理日常事务",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona",
-    "path": "agents/arona"
-  },
-  {
-    "name": "牧濑红莉栖",
-    "description": "18岁的天才脑科学家兼物理学家",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
-    "path": "agents/makise-kurisu",
-    "voiceSample": "voice-sample.mp3"
-  },
-  {
-    "name": "陆衍医生",
-    "description": "负责健康管理与日常问诊的私人医生",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
-    "path": "agents/doctor-lu"
-  },
-  {
-    "name": "大阿罗娜",
-    "description": "什亭之箱AI助手的大人形态，沉稳可靠的大阿罗娜",
-    "author": "persona-agent",
-    "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona-adult",
-    "path": "agents/arona-adult"
-  }
+ {
+  "id": "arona",
+  "name": "阿罗娜",
+  "description": "通用AI看板娘，负责管理日常事务",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona",
+  "path": "agents/arona"
+ },
+ {
+  "id": "makise-kurisu",
+  "name": "牧濑红莉栖",
+  "description": "18岁的天才脑科学家兼物理学家",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
+  "path": "agents/makise-kurisu",
+  "voiceSample": "voice-sample.mp3"
+ },
+ {
+  "id": "doctor-lu",
+  "name": "陆衍医生",
+  "description": "负责健康管理与日常问诊的私人医生",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/doctor-lu",
+  "path": "agents/doctor-lu"
+ },
+ {
+  "id": "arona-adult",
+  "name": "大阿罗娜",
+  "description": "什亭之箱AI助手的大人形态，沉稳可靠的大阿罗娜",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona-adult",
+  "path": "agents/arona-adult"
+ }
 ]
