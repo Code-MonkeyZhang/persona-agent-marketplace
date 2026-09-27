@@ -1,5 +1,5 @@
 """
-Timer state and settings dataclasses for the pomodoro timer.
+Timer state and session config dataclasses for the pomodoro timer.
 
 Pure data holders — all state mutation logic lives in server.py.
 """
@@ -10,28 +10,32 @@ from dataclasses import dataclass, field
 
 PHASE_IDLE = "idle"
 PHASE_FOCUS = "focus"
-PHASE_SHORT_BREAK = "short_break"
-PHASE_LONG_BREAK = "long_break"
+PHASE_BREAK = "break"
 
 PHASE_LABELS = {
     PHASE_IDLE: "空闲",
     PHASE_FOCUS: "专注",
-    PHASE_SHORT_BREAK: "短休息",
-    PHASE_LONG_BREAK: "长休息",
+    PHASE_BREAK: "休息",
 }
 
 
 @dataclass
-class TimerSettings:
+class SessionConfig:
+    """Definition of one focus session.
+
+    A session runs `rounds` cycles of focus + break. Every round ends
+    with its own break, including the last one.
+    """
+
     focus_min: int = 25
     break_min: int = 5
-    focus_per_round: int = 4
+    rounds: int = 1
 
     def to_dict(self) -> dict:
         return {
             "focus_min": self.focus_min,
             "break_min": self.break_min,
-            "focus_per_round": self.focus_per_round,
+            "rounds": self.rounds,
         }
 
 
@@ -41,14 +45,17 @@ class TimerState:
     running: bool = False
     ends_at: float | None = None
     remaining_seconds: int = 0
+    # Real total length of the current phase. The countdown ring reads
+    # this directly instead of guessing from the session config.
+    phase_total_seconds: int = 0
     intent: str = ""
-    focus_count_in_round: int = 0
-    settings: TimerSettings = field(default_factory=TimerSettings)
-    # Notification routing (按任务记账): stored when focus starts,
-    # used by all notifications for this pomodoro cycle.
-    started_at: str = ""
-    focus_agent_id: str = ""
-    focus_session_id: str = ""
+    round_current: int = 0
+    round_total: int = 0
+    config: SessionConfig = field(default_factory=SessionConfig)
+    # Notification routing (按任务记账): stored when the session starts,
+    # used by both notifications for the whole session.
+    owner_agent_id: str = ""
+    owner_session_id: str = ""
 
     def to_dict(self) -> dict:
         return {
@@ -56,7 +63,9 @@ class TimerState:
             "running": self.running,
             "ends_at": self.ends_at,
             "remaining_seconds": self.remaining_seconds,
+            "phase_total_seconds": self.phase_total_seconds,
             "intent": self.intent,
-            "focus_count_in_round": self.focus_count_in_round,
-            "settings": self.settings.to_dict(),
+            "round_current": self.round_current,
+            "round_total": self.round_total,
+            "config": self.config.to_dict(),
         }

@@ -1,0 +1,1 @@
+import{j as e,I as o,G as r,c as t}from"./index-CRfGQrY_.js";function s(){return e.jsx(o,{children:e.jsx(r,{className:"mobile-app"})})}t.createRoot(document.getElementById("root")).render(e.jsx(s,{}));

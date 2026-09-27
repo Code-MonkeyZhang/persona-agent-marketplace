@@ -1,6 +1,6 @@
 # 番茄时钟 Agent App
 
-专注计时 Agent App。用户在 Web UI 上设定专注时长、写一句意图，点击开始。Agent App 管理计时器，在专注开始、专注结束、用户停止、休息结束四个时刻通过 MCP notification 通知 Agent。专注结束后自动写入 SQLite 记录。
+专注计时 Agent App。用户在 Web UI 上一次配好工作时长、休息时长、轮数，点开始。session 自动推进，工作结束自动进休息，休息结束自动开下一轮，全部轮次走完自动结束。Agent 在 session 开始与结束两个时刻收到 MCP notification，专注期间进入守护模式。每段工作自动写入 SQLite 记录。
 
 ## 工具列表
 
@@ -8,23 +8,16 @@
 
 | 工具名称 | 参数 | 功能描述 |
 | :-- | :-- | :-- |
-| `start` | `intent?`: string, `duration_min?`: int | 开始一段专注。不传时长用默认值（25 分钟） |
-| `stop` | 无 | 停止当前计时器，回到空闲。专注中被停止会记录已完成时长（标记为未完成） |
-| `query_stats` | 无 | 查询今日/本周番茄钟数量、累计时长、最近 10 条专注记录 |
-| `get_timer_state` | 无 | 查询当前计时器实时状态：阶段、剩余分钟、意图、本轮进度 |
+| `start` | `focus_min`: int, `break_min`: int, `rounds`: int 三者必传, `intent?`: string | 开始一个完整 session。以工作加休息为单元循环 rounds 次，自动跑完，无需手动接力 |
+| `stop` | 无 | 中止当前 session。专注段被中止会记录已专注时长并标记为未完成 |
+| `query_stats` | 无 | 查询今日/本周番茄钟数量、累计时长、最近专注记录 |
+| `get_timer_state` | 无 | 查询实时状态：阶段、剩余时间、第几轮共几轮、意图 |
 
 ## Agent 通知
 
-Agent App 在四个时刻通过 `notifications/app` 主动推送通知给 Agent（params: `{agentId, sessionId, source, content}`）。Agent 自己调用 start / stop 工具不触发通知。
+Agent App 在 session 开始与结束两个时刻通过 `notifications/app` 主动推送通知（params: `{agentId, sessionId, source, content}`）。Agent 自己调用 start / stop 也收到通知，因为它需要知道自己进入了或退出了守护模式。轮间自动切换不通知，计时与续轮由 App 自己完成。
 
-通知所需的 `agentId` / `sessionId` 在用户首次开始专注时从 WebSocket 连接获取并存储，之后该番茄钟周期的所有通知都发往这个 session（按任务记账），不受其他 session 查询的影响。
-
-| 触发时机 | 通知内容（content） |
-| :-- | :-- |
-| 用户开始专注 | `用户开始了番茄钟，预计 {duration} 分钟，意图：{intent}` |
-| 用户停止专注 | `专注已结束，中途停止，已专注 {X 分 Y 秒}` |
-| 专注自然结束 | `专注已结束，共 {X 分钟 / X 分 Y 秒}` |
-| 休息结束 | `{短/长}休息结束了，是否继续下一个番茄钟？` |
+通知的 `agentId` / `sessionId` 在 session 启动时记录，整个 session 的通知都发往这里（按任务记账），不受其他 session 查询的影响。
 
 ## 开发
 

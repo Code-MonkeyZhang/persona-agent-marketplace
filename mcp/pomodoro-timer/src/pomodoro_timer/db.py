@@ -76,6 +76,24 @@ ALTER TABLE focus_sessions_new RENAME TO focus_sessions;
 CREATE INDEX IF NOT EXISTS idx_focus_started ON focus_sessions(started_at);
 """
 
+# v4: records gain round position columns; app_settings becomes the
+# last-used session config with focus_per_round renamed to rounds.
+_SCHEMA_V4 = """
+ALTER TABLE focus_sessions ADD COLUMN round_index INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE focus_sessions ADD COLUMN round_total INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE app_settings_new (
+    id         INTEGER PRIMARY KEY CHECK (id = 1),
+    focus_min  INTEGER NOT NULL DEFAULT 25,
+    break_min  INTEGER NOT NULL DEFAULT 5,
+    rounds     INTEGER NOT NULL DEFAULT 1
+);
+INSERT INTO app_settings_new (id, focus_min, break_min, rounds)
+    SELECT id, focus_min, break_min, MAX(focus_per_round, 1) FROM app_settings;
+DROP TABLE app_settings;
+ALTER TABLE app_settings_new RENAME TO app_settings;
+"""
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -107,6 +125,10 @@ class FocusDB:
             self._conn.executescript(_SCHEMA_V3)
             self._conn.execute("PRAGMA user_version = 3")
             log("INFO", "db_migrated", version=3)
+        if version < 4:
+            self._conn.executescript(_SCHEMA_V4)
+            self._conn.execute("PRAGMA user_version = 4")
+            log("INFO", "db_migrated", version=4)
 
     def record_session(
         self,
@@ -117,14 +139,18 @@ class FocusDB:
         completed: bool,
         agent_id: str,
         session_id: str,
+        round_index: int,
+        round_total: int,
     ) -> None:
         self._conn.execute(
             "INSERT INTO focus_sessions "
             "(started_at, ended_at, duration_sec, intent, completed, "
-            "agent_id, session_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "agent_id, session_id, round_index, round_total) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 started_at, ended_at, duration_sec, intent,
                 1 if completed else 0, agent_id, session_id,
+                round_index, round_total,
             ),
         )
         self._conn.commit()
@@ -176,23 +202,23 @@ class FocusDB:
             "week_seconds": week_row["secs"],
         }
 
-    def get_settings(self) -> dict:
+    def get_config(self) -> dict:
         row = self._conn.execute(
-            "SELECT focus_min, break_min, focus_per_round "
+            "SELECT focus_min, break_min, rounds "
             "FROM app_settings WHERE id = 1"
         ).fetchone()
         return dict(row)
 
-    def update_settings(
+    def update_config(
         self,
         focus_min: int,
         break_min: int,
-        focus_per_round: int,
+        rounds: int,
     ) -> None:
         self._conn.execute(
             "UPDATE app_settings SET focus_min = ?, break_min = ?, "
-            "focus_per_round = ? WHERE id = 1",
-            (focus_min, break_min, focus_per_round),
+            "rounds = ? WHERE id = 1",
+            (focus_min, break_min, rounds),
         )
         self._conn.commit()
 

@@ -3,17 +3,18 @@ Pomodoro Timer Agent App server.
 
 Runs two channels in one process via anyio task group:
 - stdio MCP: exposes tools (start / stop / query_stats / get_timer_state)
-  to the Agent, sends notifications on user actions and timer events
+  to the Agent, sends session-level notifications
 - uvicorn HTTP: serves the built Web UI as static files, WebSocket for
   real-time timer state
 
-Both channels share a single PomodoroServer instance. The timer runs as an
-asyncio Task; when it fires, the server records the session, notifies the
-Agent, and auto-starts the next phase (break or idle).
+Both channels share a single PomodoroServer instance. A session is
+defined by focus_min / break_min / rounds and auto-advances: every round
+runs focus then break, the next round starts by itself after each break,
+and the timer returns to idle only when the last break ends.
 
 Notification routing follows the "按任务记账" principle: the agentId /
-sessionId that started the current focus cycle receive ALL notifications
-for that cycle, regardless of which session later queries or views the panel.
+sessionId that started the session receive ALL notifications for it,
+regardless of which session later queries or views the panel.
 """
 
 from __future__ import annotations
@@ -40,15 +41,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 from .db import FocusDB
 from .log import initialize as log_init, log
 from .prompts import load_prompt
-from .timer import (
-    PHASE_FOCUS,
-    PHASE_IDLE,
-    PHASE_LABELS,
-    PHASE_LONG_BREAK,
-    PHASE_SHORT_BREAK,
-    TimerSettings,
-    TimerState,
-)
+from .timer import PHASE_BREAK, PHASE_FOCUS, PHASE_IDLE, PHASE_LABELS, SessionConfig, TimerState
 
 APP_ROOT = Path(__file__).resolve().parent.parent.parent
 UI_DIR = APP_ROOT / "ui"
@@ -78,16 +71,25 @@ TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
+                "focus_min": {
+                    "type": "integer",
+                    "description": "每轮工作时长，分钟，范围 1 到 90",
+                },
+                "break_min": {
+                    "type": "integer",
+                    "description": "每轮休息时长，分钟，范围 1 到 30",
+                },
+                "rounds": {
+                    "type": "integer",
+                    "description": "轮数，范围 1 到 8",
+                },
                 "intent": {
                     "type": "string",
                     "description": "本次专注的意图描述（可选）",
                 },
-                "duration_min": {
-                    "type": "integer",
-                    "description": "专注时长（分钟），不传用默认值",
-                },
                 **_INJECTED_PARAMS,
             },
+            "required": ["focus_min", "break_min", "rounds"],
         },
     ),
     types.Tool(
@@ -140,6 +142,20 @@ def _format_duration(seconds: int) -> str:
     return f"{minutes} 分 {secs} 秒"
 
 
+def _missing_config_keys(data: dict) -> list[str]:
+    """Return the required config keys absent from a start payload."""
+    return [k for k in ("focus_min", "break_min", "rounds") if data.get(k) is None]
+
+
+def _clamp_config(data: dict) -> SessionConfig:
+    """Validate and clamp session config values to allowed ranges."""
+    return SessionConfig(
+        focus_min=max(1, min(90, int(data.get("focus_min", 25)))),
+        break_min=max(1, min(30, int(data.get("break_min", 5)))),
+        rounds=max(1, min(8, int(data.get("rounds", 1)))),
+    )
+
+
 # --- Shared server state ----------------------------------------------------
 
 
@@ -148,15 +164,17 @@ class PomodoroServer:
 
     def __init__(self) -> None:
         self.db = FocusDB(DATA_DIR / "focus.db")
-        settings = self.db.get_settings()
-        self.state = TimerState(settings=TimerSettings(**settings))
+        config = SessionConfig(**self.db.get_config())
+        self.state = TimerState(config=config)
         self._write_stream: object | None = None
         self._ws_clients: dict[WebSocket, tuple[str, str]] = {}
         self._timer_task: asyncio.Task | None = None
-        self._focus_duration_sec: int = 0
+        # Per-session accounting for the end-of-session summary.
+        self._round_started_iso = ""
+        self._done_rounds = 0
+        self._focused_sec = 0
         self._notify_start_tmpl = load_prompt("notify_start")
         self._notify_end_tmpl = load_prompt("notify_end")
-        self._notify_break_end_tmpl = load_prompt("notify_break_end")
 
     def set_write_stream(self, stream: object) -> None:
         self._write_stream = stream
@@ -189,63 +207,85 @@ class PomodoroServer:
         """Called when the countdown reaches zero."""
         if self.state.phase == PHASE_FOCUS:
             await self._handle_focus_end()
-        elif self.state.phase in (PHASE_SHORT_BREAK, PHASE_LONG_BREAK):
+        elif self.state.phase == PHASE_BREAK:
             await self._handle_break_end()
 
+    def _begin_phase(self, phase: str, duration_sec: int) -> None:
+        """Set state to the given phase and schedule its countdown."""
+        self.state.phase = phase
+        self.state.running = True
+        self.state.ends_at = _now_ms() + duration_sec * 1000
+        self.state.remaining_seconds = duration_sec
+        self.state.phase_total_seconds = duration_sec
+        self._schedule_phase_end(duration_sec)
+
+    def _begin_focus(self) -> None:
+        """Enter the focus phase of the current round."""
+        self._round_started_iso = _now_iso()
+        self._begin_phase(PHASE_FOCUS, self.state.config.focus_min * 60)
+        log(
+            "INFO", "round_started",
+            round=self.state.round_current,
+            total=self.state.round_total,
+        )
+
+    def _begin_break(self) -> None:
+        """Enter the break phase of the current round."""
+        self._begin_phase(PHASE_BREAK, self.state.config.break_min * 60)
+        log("INFO", "break_started", round=self.state.round_current)
+
     async def _handle_focus_end(self) -> None:
-        """Record session, notify, auto-start the appropriate break."""
-        duration_sec = self._focus_duration_sec
+        """Record the finished round, then start this round's break."""
+        duration_sec = self.state.phase_total_seconds
+        self._done_rounds += 1
+        self._focused_sec += duration_sec
         try:
             self.db.record_session(
-                self.state.started_at, _now_iso(),
+                self._round_started_iso, _now_iso(),
                 duration_sec, self.state.intent, True,
-                self.state.focus_agent_id, self.state.focus_session_id,
+                self.state.owner_agent_id, self.state.owner_session_id,
+                self.state.round_current, self.state.round_total,
+            )
+            log(
+                "INFO", "focus_recorded",
+                duration_sec=duration_sec,
+                round=self.state.round_current,
             )
         except Exception as e:
             log("ERROR", "record_session_failed", error=str(e))
 
-        await self._notify(
-            self._notify_end_tmpl.format(
-                summary=f"共 {_format_duration(duration_sec)}"
-            )
-        )
-
-        self.state.focus_count_in_round += 1
-        if self.state.focus_count_in_round >= self.state.settings.focus_per_round:
-            self._begin_break(PHASE_LONG_BREAK)
-            self.state.focus_count_in_round = 0
-        else:
-            self._begin_break(PHASE_SHORT_BREAK)
-
-        log(
-            "INFO", "focus_ended",
-            duration_sec=duration_sec,
-            count=self.state.focus_count_in_round,
-        )
+        self._begin_break()
         await self._push_state()
         await self._push_data()
 
     async def _handle_break_end(self) -> None:
-        """Notify and return to idle."""
-        break_type = "短" if self.state.phase == PHASE_SHORT_BREAK else "长"
-        content = self._notify_break_end_tmpl.format(break_type=break_type)
-        await self._notify(content)
+        """Continue with the next round or finish the session."""
+        if self.state.round_current < self.state.round_total:
+            self.state.round_current += 1
+            self._begin_focus()
+            await self._push_state()
+        else:
+            await self._finish_session(stopped=False)
+
+    async def _finish_session(self, stopped: bool) -> None:
+        """Notify the session end, reset to idle."""
+        if stopped:
+            summary = (
+                f"，中途停止，已完成 {self._done_rounds} 轮，"
+                f"累计专注 {_format_duration(self._focused_sec)}"
+            )
+        else:
+            summary = (
+                f"，共完成 {self._done_rounds} 轮，"
+                f"累计专注 {_format_duration(self._focused_sec)}"
+            )
+        await self._notify(self._notify_end_tmpl.format(summary=summary))
         self._reset_to_idle()
-        log("INFO", "break_ended", type=self.state.phase)
+        log(
+            "INFO", "session_stopped" if stopped else "session_completed",
+            rounds=self._done_rounds, focused_sec=self._focused_sec,
+        )
         await self._push_state()
-
-    def _begin_break(self, break_type: str) -> None:
-        """Set state to a break phase and schedule its timer.
-
-        Long break = break_min * 3; short break = break_min.
-        """
-        base = self.state.settings.break_min
-        duration = base * 3 if break_type == PHASE_LONG_BREAK else base
-        self.state.phase = break_type
-        self.state.running = True
-        self.state.ends_at = _now_ms() + duration * 60 * 1000
-        self.state.remaining_seconds = duration * 60
-        self._schedule_phase_end(duration * 60)
 
     def _reset_to_idle(self) -> None:
         """Reset timer state to idle without touching the timer task."""
@@ -253,108 +293,122 @@ class PomodoroServer:
         self.state.running = False
         self.state.ends_at = None
         self.state.remaining_seconds = 0
+        self.state.phase_total_seconds = 0
         self.state.intent = ""
-        self._focus_duration_sec = 0
+        self.state.round_current = 0
+        self.state.round_total = 0
+        self._round_started_iso = ""
+        self._done_rounds = 0
+        self._focused_sec = 0
 
-    def _elapsed_seconds(self) -> int:
-        """Calculate elapsed focus seconds from total minus remaining."""
+    def _elapsed_focus_seconds(self) -> int:
+        """Calculate elapsed focus seconds of the current phase."""
         if self.state.running:
             remaining = max(0, int((self.state.ends_at - _now_ms()) / 1000))
         else:
             remaining = self.state.remaining_seconds
-        return max(0, self._focus_duration_sec - remaining)
+        return max(0, self.state.phase_total_seconds - remaining)
 
-    # --- Focus start / stop (shared by MCP and WS) ---
+    # --- Session start / stop (shared by MCP and WS) ---
 
-    async def _start_focus(
+    async def _start_session(
         self,
         intent: str,
-        duration_min: int | None,
+        config: SessionConfig,
         agent_id: str,
         session_id: str,
         by_user: bool,
-    ) -> int:
-        """Start a focus phase. Returns the actual duration in minutes."""
-        actual = duration_min or self.state.settings.focus_min
-        self.state.phase = PHASE_FOCUS
-        self.state.running = True
-        self.state.intent = intent
-        self.state.started_at = _now_iso()
-        self.state.focus_agent_id = agent_id
-        self.state.focus_session_id = session_id
-        self.state.ends_at = _now_ms() + actual * 60 * 1000
-        self.state.remaining_seconds = actual * 60
-        self._focus_duration_sec = actual * 60
-        self._schedule_phase_end(actual * 60)
+    ) -> None:
+        """Start a full session and begin its first focus phase.
 
-        intent_clause = f"，意图：{intent}" if intent else ""
+        The config is persisted as the last-used one so the panel form
+        can prefill it next time.
+        """
+        self.db.update_config(**config.__dict__)
+        self.state.config = config
+        self.state.intent = intent
+        self.state.round_current = 1
+        self.state.round_total = config.rounds
+        self.state.owner_agent_id = agent_id
+        self.state.owner_session_id = session_id
+        self._begin_focus()
+
+        intent_clause = f"，意图为 {intent}" if intent else ""
         content = self._notify_start_tmpl.format(
-            duration=actual, intent_clause=intent_clause,
+            rounds=config.rounds,
+            focus_min=config.focus_min,
+            break_min=config.break_min,
+            intent_clause=intent_clause,
         )
         await self._notify(content)
 
         log(
-            "INFO", "focus_started",
+            "INFO", "session_started",
             by="user" if by_user else "agent",
-            duration=actual, intent=intent,
+            focus_min=config.focus_min,
+            break_min=config.break_min,
+            rounds=config.rounds,
+            intent=intent,
         )
         await self._push_state()
-        return actual
 
     async def _do_stop(self, by_user: bool) -> None:
-        """Stop the timer, record partial if focus, return to idle."""
+        """Abort the session, record partial focus, return to idle."""
         was_focus = self.state.phase == PHASE_FOCUS
-        elapsed_sec = self._elapsed_seconds() if was_focus else 0
+        elapsed_sec = self._elapsed_focus_seconds() if was_focus else 0
 
         if self._timer_task and not self._timer_task.done():
             self._timer_task.cancel()
             self._timer_task = None
 
         if was_focus and elapsed_sec >= 1:
+            self._focused_sec += elapsed_sec
             try:
                 self.db.record_session(
-                    self.state.started_at, _now_iso(),
+                    self._round_started_iso, _now_iso(),
                     elapsed_sec, self.state.intent, False,
-                    self.state.focus_agent_id, self.state.focus_session_id,
+                    self.state.owner_agent_id, self.state.owner_session_id,
+                    self.state.round_current, self.state.round_total,
+                )
+                log(
+                    "INFO", "focus_recorded",
+                    duration_sec=elapsed_sec,
+                    round=self.state.round_current,
                 )
             except Exception as e:
                 log("ERROR", "record_session_failed", error=str(e))
 
-        if was_focus:
-            await self._notify(
-                self._notify_end_tmpl.format(
-                    summary=f"中途停止，已专注 {_format_duration(elapsed_sec)}"
-                )
-            )
-
-        self._reset_to_idle()
-        log(
-            "INFO", "timer_stopped",
-            was_focus=was_focus, elapsed_sec=elapsed_sec,
-            by="user" if by_user else "agent",
-        )
-        await self._push_state()
+        await self._finish_session(stopped=True)
         if was_focus and elapsed_sec >= 1:
             await self._push_data()
 
     # --- MCP tool handlers ---
 
     async def tool_start(
-        self, intent: str, duration_min: int | None,
-        agent_id: str, session_id: str,
+        self, args: dict, agent_id: str, session_id: str,
     ) -> str:
         if self.state.phase != PHASE_IDLE:
-            return "计时器正在运行中，请先停止当前计时"
-        actual = await self._start_focus(
-            intent, duration_min, agent_id, session_id, by_user=False,
+            return "session 正在进行中，请先停止当前 session"
+        missing = _missing_config_keys(args)
+        if missing:
+            return (
+                f"缺少必传参数 {', '.join(missing)}，"
+                "focus_min、break_min、rounds 每次都要传"
+            )
+        config = _clamp_config(args)
+        await self._start_session(
+            args.get("intent", ""), config, agent_id, session_id, by_user=False,
         )
-        return f"专注已开始，{actual} 分钟"
+        return (
+            f"session 已开始，工作 {config.focus_min} 分钟，"
+            f"休息 {config.break_min} 分钟，共 {config.rounds} 轮"
+        )
 
     async def tool_stop(self) -> str:
         if self.state.phase == PHASE_IDLE:
-            return "计时器未在运行"
+            return "当前空闲，无 session 运行"
         await self._do_stop(by_user=False)
-        return "计时器已停止"
+        return "session 已停止"
 
     def query_stats(self) -> str:
         stats = self.db.get_stats()
@@ -377,7 +431,7 @@ class PomodoroServer:
 
     def get_timer_state(self) -> str:
         if self.state.phase == PHASE_IDLE:
-            return "当前空闲，无计时器运行"
+            return "当前空闲，无 session 运行"
         phase_label = PHASE_LABELS.get(self.state.phase, self.state.phase)
         if self.state.running:
             remaining_sec = max(
@@ -388,14 +442,10 @@ class PomodoroServer:
         parts = [
             f"当前阶段：{phase_label}",
             f"剩余：{remaining_sec // 60} 分 {remaining_sec % 60} 秒",
+            f"轮次：第 {self.state.round_current} 轮 / 共 {self.state.round_total} 轮",
         ]
-        if self.state.phase == PHASE_FOCUS:
-            if self.state.intent:
-                parts.append(f"意图：{self.state.intent}")
-            parts.append(
-                f"本轮第 {self.state.focus_count_in_round + 1} 个 / "
-                f"共 {self.state.settings.focus_per_round} 个"
-            )
+        if self.state.phase == PHASE_FOCUS and self.state.intent:
+            parts.append(f"意图：{self.state.intent}")
         if not self.state.running:
             parts.append("（已暂停）")
         return "，".join(parts)
@@ -425,15 +475,13 @@ class PomodoroServer:
                 msg = await websocket.receive_json()
                 mtype = msg.get("type")
                 if mtype == "start":
-                    await self._on_ws_start(websocket, msg.get("intent", ""), msg.get("duration_min"))
+                    await self._on_ws_start(websocket, msg)
                 elif mtype == "pause":
                     await self._on_ws_pause()
                 elif mtype == "resume":
                     await self._on_ws_resume()
                 elif mtype == "stop":
-                    await self._on_ws_stop(websocket)
-                elif mtype == "update_settings":
-                    await self._on_ws_update_settings(msg.get("settings", {}))
+                    await self._on_ws_stop()
                 elif mtype == "get_month":
                     year = int(msg.get("year", 0))
                     month = int(msg.get("month", 0))
@@ -452,16 +500,21 @@ class PomodoroServer:
 
     # --- WS event handlers ---
 
-    async def _on_ws_start(self, ws: WebSocket, intent: str, duration_min: int | None = None) -> None:
+    async def _on_ws_start(self, ws: WebSocket, msg: dict) -> None:
         if self.state.phase != PHASE_IDLE:
-            log("WARN", "start_ignored", reason="timer running")
+            log("WARN", "start_ignored", reason="session running")
             return
+        missing = _missing_config_keys(msg)
+        if missing:
+            log("WARN", "start_ignored", reason="missing params", missing=missing)
+            return
+        config = _clamp_config(msg)
         agent_id, session_id = self._ws_clients.get(ws, ("", ""))
-        await self._start_focus(
-            intent, duration_min, agent_id, session_id, by_user=True,
+        await self._start_session(
+            msg.get("intent", ""), config, agent_id, session_id, by_user=True,
         )
 
-    async def _on_ws_stop(self, ws: WebSocket) -> None:
+    async def _on_ws_stop(self) -> None:
         if self.state.phase == PHASE_IDLE:
             log("WARN", "stop_ignored", reason="not running")
             return
@@ -489,24 +542,17 @@ class PomodoroServer:
         log("INFO", "timer_resumed", remaining=self.state.remaining_seconds)
         await self._push_state()
 
-    async def _on_ws_update_settings(self, data: dict) -> None:
-        clamped = _clamp_settings(data)
-        self.db.update_settings(**clamped)
-        self.state.settings = TimerSettings(**clamped)
-        log("INFO", "settings_updated", **clamped)
-        await self._push_state()
-
     # --- Notification & broadcast helpers ---
 
     async def _notify(self, content: str) -> None:
-        """Push a notifications/app message to the session that started
-        the current focus cycle (按任务记账). Uses focus_agent_id /
-        focus_session_id from state, not the current WS viewer."""
+        """Push a notifications/app message to the session that owns
+        the current pomodoro session (按任务记账). Uses owner_agent_id /
+        owner_session_id from state, not the current WS viewer."""
         if not self._write_stream:
             log("WARN", "notification_skipped", reason="no write_stream")
             return
-        agent_id = self.state.focus_agent_id
-        session_id = self.state.focus_session_id
+        agent_id = self.state.owner_agent_id
+        session_id = self.state.owner_session_id
         if not agent_id or not session_id:
             log("WARN", "notification_skipped", reason="no agent/session")
             return
@@ -543,15 +589,6 @@ class PomodoroServer:
                 dead.add(ws)
         for ws in dead:
             self._ws_clients.pop(ws, None)
-
-
-def _clamp_settings(data: dict) -> dict:
-    """Validate and clamp settings values to allowed ranges."""
-    return {
-        "focus_min": max(1, min(90, int(data.get("focus_min", 25)))),
-        "break_min": max(1, min(30, int(data.get("break_min", 5)))),
-        "focus_per_round": max(1, min(8, int(data.get("focus_per_round", 4)))),
-    }
 
 
 # --- Starlette HTTP app -----------------------------------------------------
@@ -591,8 +628,7 @@ def _make_handlers(server: PomodoroServer):
 
         if name == "start":
             text = await server.tool_start(
-                args.get("intent", ""),
-                args.get("duration_min"),
+                args,
                 args.get("agentId", ""),
                 args.get("sessionId", ""),
             )
@@ -629,7 +665,7 @@ async def run() -> None:
     http_app = create_http_app(server)
 
     mcp = Server(
-        SOURCE, version="0.2.0", instructions=load_prompt("instructions")
+        SOURCE, version="0.3.0", instructions=load_prompt("instructions")
     )
     handle_list, handle_call = _make_handlers(server)
     mcp.add_request_handler(
