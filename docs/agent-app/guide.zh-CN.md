@@ -2,7 +2,7 @@
 
 > 语言：**中文** | [English](./guide.en.md)
 
-这份指南面向想在 persona-agent 商城发布 Agent App 的开发者。读完它，你应该能从零写出一个可以上架的 Agent App。
+这份指南面向想在 persona-agent 商城发布 Agent App 的开发者。读完它，你应该能从零写出一个可以上架的 Agent App。它只讲 App 的专属要求，普通 MCP 商品共用的通用要求先看 [MCP 上架指南](../mcp/guide.zh-CN.md)。
 
 ## 目录
 

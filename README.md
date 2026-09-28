@@ -45,7 +45,13 @@ read the developer guide:
 ## Publishing
 
 Add your folder under the right category, register it in that category's
-`index.json`, and open a Pull Request.
+`index.json`, and open a Pull Request. Each category has a dedicated guide
+covering the full requirements:
+
+- [Skill publishing guide (中文)](./docs/skill/guide.zh-CN.md) | [English](./docs/skill/guide.en.md)
+- [MCP publishing guide (中文)](./docs/mcp/guide.zh-CN.md) | [English](./docs/mcp/guide.en.md)
+- [Agent publishing guide (中文)](./docs/agent/guide.zh-CN.md) | [English](./docs/agent/guide.en.md)
+- [Agent App developer guide (中文)](./docs/agent-app/guide.zh-CN.md) | [English](./docs/agent-app/guide.en.md)
 
 ### Skills
 

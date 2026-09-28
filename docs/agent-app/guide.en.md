@@ -2,7 +2,7 @@
 
 > Language: English | **中文**
 
-This guide is for developers who want to publish an Agent App to the persona-agent marketplace. By the end you should be able to build a publishable Agent App from scratch.
+This guide is for developers who want to publish an Agent App to the persona-agent marketplace. By the end you should be able to build a publishable Agent App from scratch. It covers only what is specific to apps, and the requirements shared by every MCP product are in the [MCP publishing guide](../mcp/guide.en.md).
 
 ## Contents
 
