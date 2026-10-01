@@ -1,5 +1,0 @@
-{
-  "type": "stdio",
-  "command": "uv",
-  "args": ["run", "--directory", "${SERVERS_DIR}/ticktick-mcp-enhanced", "ticktick-mcp"]
-}
