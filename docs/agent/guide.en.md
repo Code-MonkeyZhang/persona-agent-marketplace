@@ -22,14 +22,13 @@ One Agent product is one folder under the agents directory.
 agents/<name>/
 ├── config.json          ← required, runtime parameters
 ├── systemPrompt.md      ← required, the persona prompt
-├── voice-sample.mp3     ← optional, voice clone sample
 └── assets/
     ├── avatar.png       ← required, card image and chat avatar
     ├── backgrounds/     ← optional, background art
     └── pose/            ← optional, expression variants
 ```
 
-The folder name is the machine key, made of lowercase letters, digits, and hyphens. The avatar.png inside assets is the single agreed source for both the marketplace card and the chat avatar, so it must exist. Images under pose and backgrounds are referenced by file name, and Chinese file names work. The voice sample sits at the product root, the format is not fixed, and mp3 has been verified in practice.
+The folder name is the machine key, made of lowercase letters, digits, and hyphens. The avatar.png inside assets is the single agreed source for both the marketplace card and the chat avatar, so it must exist. Images under pose and backgrounds are referenced by file name, and Chinese file names work.
 
 ## Writing config.json
 
@@ -80,24 +79,23 @@ Append one entry to [agents/index.json](../../agents/index.json) in this reposit
   "description": "18岁的天才脑科学家兼物理学家",
   "author": "persona-agent",
   "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
-  "path": "agents/makise-kurisu",
-  "voiceSample": "voice-sample.mp3"
+  "path": "agents/makise-kurisu"
 }
 ```
 
-The base fields match the Skill manifest, and their meanings are covered in the registering section of the [Skill publishing guide](../skill/guide.en.md). Agent has two optional fields of its own.
+The base fields match the Skill manifest, and their meanings are covered in the registering section of the [Skill publishing guide](../skill/guide.en.md). Agent carries no fields of its own today, and the voice identity is configured by the user in the client voice table after install, so goods never ship one.
 
-The voiceSample holds the file name of the voice sample. Declaring it obliges the file to exist in the product folder, and a missing file silently drops the voice capability. The logo can override the card image. When it is absent the app falls back to avatar.png inside assets, so the card and the chat avatar share one picture, and no product in the repository writes this field today.
+The base logo can override the card image. When it is absent the app falls back to avatar.png inside assets, so the card and the chat avatar share one picture, and no product in the repository writes this field today.
 
 The same-name rule stays at the manifest level, same as Skills. The folder name, the manifest id, and the last segment of path must be the same kebab-case string. The manifest is validated as a whole, and one bad entry breaks the entire Agent tab.
 
 ## What happens when a user installs
 
-After the user clicks install, the app validates the name and locates the entry in the manifest by folder name, returning 404 when it is missing. It then walks the marketplaceSource identifiers of all local Agents, and a template that is already installed returns 409 while the card shows as installed with a locked button.
+After the user clicks install, the app validates the name and locates the entry in the manifest by folder name, returning 404 when it is missing. It then checks the marketplace source column in the database, and a template that is already installed returns 409 while the card shows as installed with a locked button.
 
-Once the checks pass, the app downloads the entire product folder into a temporary directory. The identity of the new Agent is unknown until the config is parsed, so the destination path is not yet known either, which is why the download lands in a temporary spot first. A failure at any step cleans the temporary directory and leaves no half-built Agent behind.
+Once the checks pass, the app fetches the text of config.json and systemPrompt.md straight from the raw endpoints into memory. It injects the systemPrompt into the config, washes away the system fields, empties the skill and tool lists, writes the source identifier, and validates the whole thing against a schema, with an invalid config failing the install outright. On success it generates a fresh identity, writes the config together with the prompt into the database, and creates the asset and memory directories on disk.
 
-The app then reads config.json, injects the content of systemPrompt.md, washes away the system fields, empties the skill and tool lists, writes the source identifier, and validates the whole thing against a schema, with an invalid config failing the install outright. On success it generates a fresh identity, creates the full directory tree covering config, assets, sessions, and memory, and copies the assets directory across. When the manifest declares a voiceSample and the file exists, the sample is copied along.
+The app then scans the file list of the product folder, skips the two text files, and downloads assets and any other files by relative path straight into the new Agent directory. A download failure rolls the whole install back, leaving no row and no directory behind.
 
 Finally the app registers the session manager, the frontend refreshes the list and switches to the new Agent, and the install endpoint returns 201 with the new Agent data. Reinstalling the same template requires deleting the old Agent in the AgentEditor first.
 
@@ -107,7 +105,6 @@ Finally the app registers the session manager, the frontend refreshes the list a
 - config.json has name, defaultModel, and maxSteps, and carries no systemPrompt and no system fields
 - systemPrompt.md exists and carries the persona
 - avatar.png exists inside assets
-- The voiceSample declaration matches the file, or both are absent
 - Homepage is a valid URL
 - Manifest JSON is valid and no Git LFS is used
 
@@ -121,10 +118,6 @@ The marketplace has no update mechanism. A user who wants the new version delete
 
 No. The installer empties skillNames and mcpNames. This is deliberate product semantics, the persona arrives first and capabilities are wired up by the user.
 
-**What format should the voice sample use?**
-
-mp3 has been verified. Put the sample at the product root, write its file name into voiceSample, and keep the two in agreement.
-
 **What happens to an id written into config.json?**
 
 It gets deleted. A new Agent always receives a freshly generated identity, and the id in the template takes no part.
@@ -137,4 +130,4 @@ Not recommended. avatar.png is the agreed default location, and both the card an
 
 [agents/arona](../../agents/arona) is the minimal sample, config plus systemPrompt plus an avatar, and those three are enough to publish.
 
-[agents/makise-kurisu](../../agents/makise-kurisu) is the full sample, with a voice sample, a background, and six expression variants, and it is the one to read for arranging assets.
+[agents/makise-kurisu](../../agents/makise-kurisu) is the full sample, with a background and six expression variants, and it is the one to read for arranging assets.

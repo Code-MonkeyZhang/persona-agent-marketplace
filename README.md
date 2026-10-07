@@ -99,8 +99,7 @@ a minimal server skeleton, and the publishing checklist.
 ### Agent Personas
 
 - Product lives under `agents/<name>/` with `config.json`,
-  `systemPrompt.md`, and `assets/` (optional `voiceSample` file referenced
-  from the manifest entry).
+  `systemPrompt.md`, and `assets/`.
 - Register an entry in `agents/index.json` with `id` / `name` /
   `description` / `author` / `homepage` / `path`. `id` equals the folder
   name. An optional `logo` overrides the default `assets/avatar.png` card

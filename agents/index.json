@@ -13,8 +13,7 @@
   "description": "18岁的天才脑科学家兼物理学家",
   "author": "persona-agent",
   "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
-  "path": "agents/makise-kurisu",
-  "voiceSample": "voice-sample.mp3"
+  "path": "agents/makise-kurisu"
  },
  {
   "id": "doctor-lu",

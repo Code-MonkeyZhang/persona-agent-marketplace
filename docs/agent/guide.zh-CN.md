@@ -22,14 +22,13 @@ Agent 也没有连接状态的概念，它不去连任何外部服务，卡片�
 agents/<name>/
 ├── config.json          ← 必须，运行参数
 ├── systemPrompt.md      ← 必须，人设提示词
-├── voice-sample.mp3     ← 可选，语音克隆样本
 └── assets/
     ├── avatar.png       ← 必须，卡片图与聊天头像
     ├── backgrounds/     ← 可选，背景图
     └── pose/            ← 可选，表情差分
 ```
 
-文件夹名是机器键，由小写字母、数字、短横线组成。assets 里的 avatar.png 是卡片展示图与聊天头像的唯一约定来源，必须提供。pose 和 backgrounds 里的图片按文件名引用，中文文件名可以用。语音样本放商品根目录，格式没有硬性限制，mp3 已经实际验证过。
+文件夹名是机器键，由小写字母、数字、短横线组成。assets 里的 avatar.png 是卡片展示图与聊天头像的唯一约定来源，必须提供。pose 和 backgrounds 里的图片按文件名引用，中文文件名可以用。
 
 ## 编写 config.json
 
@@ -80,24 +79,23 @@ systemPrompt 决定装完的 Agent 像不像，几条经验值得参考。定身
   "description": "18岁的天才脑科学家兼物理学家",
   "author": "persona-agent",
   "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/makise-kurisu",
-  "path": "agents/makise-kurisu",
-  "voiceSample": "voice-sample.mp3"
+  "path": "agents/makise-kurisu"
 }
 ```
 
-基座字段和 Skill 清单一致，id、name、description、author、homepage、path 的含义看 [Skill 上架指南](../skill/guide.zh-CN.md) 的登记一节。Agent 有两个可选的专属字段。
+基座字段和 Skill 清单一致，id、name、description、author、homepage、path 的含义看 [Skill 上架指南](../skill/guide.zh-CN.md) 的登记一节。Agent 目前没有专属字段，语音身份由用户装完后在客户端的语音表里配置，商品不携带。
 
-voiceSample 写语音样本的文件名，声明了文件就必须真实存在于商品文件夹，缺文件时语音功能静默缺失。logo 可以覆盖卡片展示图，不写时走 assets 里的 avatar.png，卡片和聊天头像共用一张图，现有商品都不写这个字段。
+基座的 logo 可以覆盖卡片展示图，不写时走 assets 里的 avatar.png，卡片和聊天头像共用一张图，现有商品都不写这个字段。
 
 同名规则和 Skill 一样收敛在清单层面。文件夹名、清单的 id、path 的末段，三处必须是同一个 kebab-case 字符串。清单同样整体过 schema 校验，一条坏记录会让整个 Agent 商城打不开。
 
 ## 用户安装时会发生什么
 
-用户点安装后，应用先校验名字并按文件夹名在清单里找条目，找不到返回 404。然后遍历本地所有 Agent 的来源标识，同一个模板已经装过就返回 409，卡片也会显示已安装并锁住按钮。
+用户点安装后，应用先校验名字并按文件夹名在清单里找条目，找不到返回 404。然后查数据库的商城来源列，同一个模板已经装过就返回 409，卡片也会显示已安装并锁住按钮。
 
-校验通过后，应用把整个商品文件夹下载到一个临时目录。因为新 Agent 的身份要等配置解析完才会生成，目标路径此刻还不知道，所以先下到临时位置。任何一步失败都会清理临时目录，不会留下半个残缺的 Agent。
+校验通过后，应用直接从 raw 地址把 config.json 与 systemPrompt.md 的文本取进内存。systemPrompt 注入配置，洗掉系统字段，清空技能和工具列表，写入来源标识，然后整体过 schema 校验，校验不过直接报错。校验通过后生成全新的 Agent 身份，配置连同提示词写进数据库，同时在磁盘建好资源与记忆的目录树。
 
-接着应用读 config.json，把 systemPrompt.md 的内容注入进来，洗掉系统字段，清空技能和工具列表，写入来源标识，然后整体过 schema 校验，校验不过直接报错。校验通过后生成全新的 Agent 身份，创建完整的目录树，涵盖配置、资源、会话、记忆各自的目录，把 assets 整目录复制过去。清单声明了 voiceSample 且文件存在时，语音样本也一起复制。
+接着应用扫描商品文件夹的文件清单，跳过两个文本文件，把 assets 等其余文件按相对路径直接下载到新角色的目录。下载失败会回滚整个安装，库里的行和目录都不留痕。
 
 最后注册会话管理，前端刷新列表并切换到这个新 Agent，安装接口返回 201 和新 Agent 的数据。用户想重装同一个模板，先去 AgentEditor 删掉旧的那个。
 
@@ -107,7 +105,6 @@ voiceSample 写语音样本的文件名，声明了文件就必须真实存在�
 - config.json 有 name、defaultModel、maxSteps，没有 systemPrompt 和系统字段
 - systemPrompt.md 存在且是人格主体
 - assets 里的 avatar.png 存在
-- voiceSample 声明与文件一致，或者都不写
 - homepage 是合法 URL
 - 清单 JSON 语法合法，没有使用 Git LFS
 
@@ -121,10 +118,6 @@ voiceSample 写语音样本的文件名，声明了文件就必须真实存在�
 
 不能。安装器会把 skillNames 和 mcpNames 清空。这是有意的产品语义，人格先来，能力由用户自己配。
 
-**语音样本用什么格式？**
-
-mp3 已验证可用。样本放商品根目录，清单的 voiceSample 写文件名，两处对得上就行。
-
 **config.json 里写了 id 会怎样？**
 
 会被删除。新 Agent 一定拿到新生成的身份，模板里的 id 不参与。
@@ -137,4 +130,4 @@ mp3 已验证可用。样本放商品根目录，清单的 voiceSample 写文件
 
 [agents/arona](../../agents/arona) 是最小样本，config 加 systemPrompt 加头像，三样齐就能上架。
 
-[agents/makise-kurisu](../../agents/makise-kurisu) 是全量样本，语音样本、背景图、六个表情差分齐全，想看资源怎么摆就看它。
+[agents/makise-kurisu](../../agents/makise-kurisu) 是全量样本，背景图、六个表情差分齐全，想看资源怎么摆就看它。
