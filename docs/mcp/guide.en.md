@@ -34,11 +34,12 @@ mcp/<name>/
 ├── logo.png          ← recommended, marketplace card icon
 ├── pyproject.toml    ← required, package definition
 ├── uv.lock           ← required, reproducible dependency lock
+├── .python-version   ← required, pinned interpreter version
 ├── src/              ← server sources
 └── ui/               ← Agent Apps only, built Web UI
 ```
 
-The folder name is the machine key, made of lowercase letters, digits, and hyphens. The logo can be SVG or PNG, and a missing logo falls back to a wrench icon on the card. A self-hosted product must commit uv.lock, because reproducing your verified dependency set on the user's machine depends on it. Without it uv sync may install versions that behave differently.
+The folder name is the machine key, made of lowercase letters, digits, and hyphens. The logo can be SVG or PNG, and a missing logo falls back to a wrench icon on the card. A self-hosted product must commit uv.lock, because reproducing your verified dependency set on the user's machine depends on it. Without it uv sync may install versions that behave differently. A self-hosted product must also commit .python-version holding a stable version at least two years old, currently 3.12 across the catalog. Both uv sync and uv run select the interpreter from it. Without the pin uv fetches the newest Python of the day, and on a freshly released interpreter many C-extension dependencies ship no prebuilt wheels yet, so uv falls back to compiling from source, which fails outright on Windows machines without build tools.
 
 Nothing the user does not need at runtime belongs in the repository. Web frontend sources, node_modules, data directories, and logs all get downloaded verbatim onto user machines. The Agent App guide has a comparison between the development repo and the published product worth copying.
 
@@ -126,6 +127,7 @@ Uninstall is four steps, disconnect, leave the pool, remove the config entry, an
 - Paths use the ${SERVERS_DIR} placeholder with nothing hardcoded
 - The service does not depend on a per-user static API key, and login goes through OAuth
 - uv.lock is committed
+- .python-version is committed with a stable version at least two years old, currently 3.12
 - Web sources, node_modules, data directories, and logs are stripped
 - Homepage is a valid URL, and the logo exists and is referenced
 - Manifest JSON is valid and no Git LFS is used
@@ -139,6 +141,10 @@ No. runtime declares a local runtime need, and a remote product runs no local pr
 **Why must uv.lock be committed?**
 
 uv sync on the user's machine reproduces the dependency versions you verified through the lock file. Without it the install may resolve different versions, and the install cannot run offline.
+
+**Why must .python-version be committed?**
+
+Without a pin uv always fetches the newest Python interpreter of the day. Every new Python release starts a window where C-extension dependencies have not published prebuilt wheels yet, and users can land inside it at any time. Pinning a mature version such as 3.12 keeps every install on prebuilt wheels, so no compilation ever runs on the user's machine.
 
 **My service needs an API key. How does it reach the user?**
 
