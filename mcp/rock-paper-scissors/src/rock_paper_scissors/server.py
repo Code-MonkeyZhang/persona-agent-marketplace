@@ -582,6 +582,61 @@ def _make_handlers(server: RpsServer):
     return handle_list_tools, handle_call_tool
 
 
+# --- Lifecycle binding -------------------------------------------------------
+
+
+def _host_alive(pid: int) -> bool:
+    """Confirm the host server process is still running.
+
+    On Windows os.kill with signal zero terminates the target,
+    so query the process status through the kernel API instead.
+    """
+    if sys.platform == "win32":
+        import ctypes
+
+        handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            ctypes.windll.kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+async def run_mcp(
+    mcp: Server, read_stream, write_stream, uv_server: uvicorn.Server
+) -> None:
+    """Run the MCP loop and stop the HTTP server after the stdio channel closes."""
+    await mcp.run(read_stream, write_stream, mcp.create_initialization_options())
+    uv_server.should_exit = True
+
+
+async def watch_host(uv_server: uvicorn.Server, interval: float = 5) -> None:
+    """Stop the HTTP server and exit once the host server process is gone.
+
+    The stdio channel may never surface a break, so this watch is the reliable death signal.
+    After a grace period for uvicorn to stop, os._exit guarantees the process ends.
+    """
+    host_pid = int(os.environ.get("PERSONA_SERVER_PID", "0"))
+    if host_pid == 0:
+        return
+    while not uv_server.should_exit and _host_alive(host_pid):
+        await anyio.sleep(interval)
+    if uv_server.should_exit:
+        return
+    log("INFO", "host_gone_stopping_http", pid=host_pid)
+    uv_server.should_exit = True
+    await anyio.sleep(2)
+    os._exit(0)
+
+
 # --- Dual-channel runner ----------------------------------------------------
 
 
@@ -597,7 +652,7 @@ async def run() -> None:
     server = RpsServer()
     http_app = create_http_app(server)
 
-    mcp = Server(SOURCE, version="0.1.0", instructions=load_prompt("instructions"))
+    mcp = Server(SOURCE, version="0.1.1", instructions=load_prompt("instructions"))
     handle_list, handle_call = _make_handlers(server)
     mcp.add_request_handler(
         "tools/list", types.PaginatedRequestParams, handle_list
@@ -622,10 +677,6 @@ async def run() -> None:
         log("INFO", "stdio_ready")
 
         async with anyio.create_task_group() as tg:
-            tg.start_soon(
-                mcp.run,
-                read_stream,
-                write_stream,
-                mcp.create_initialization_options(),
-            )
+            tg.start_soon(run_mcp, mcp, read_stream, write_stream, uv_server)
+            tg.start_soon(watch_host, uv_server)
             tg.start_soon(uv_server.serve)
