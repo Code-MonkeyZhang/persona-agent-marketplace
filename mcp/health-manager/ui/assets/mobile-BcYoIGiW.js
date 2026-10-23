@@ -1,1 +1,0 @@
-import{j as e,I as t,H as o,c as r}from"./index-QM5KzsE_.js";function s(){return e.jsx(t,{children:e.jsx(o,{className:"mobile-app"})})}r.createRoot(document.getElementById("root")).render(e.jsx(s,{}));

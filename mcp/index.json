@@ -62,7 +62,7 @@
  {
   "id": "health-manager",
   "name": "健康管理",
-  "description": "对话里随口记录体重、血压、心率和力量训练，面板自动更新趋势。",
+  "description": "对话里随口记录体征、饮食、训练与化验影像病历，面板自动更新趋势。",
   "author": "persona-agent",
   "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/mcp/health-manager",
   "path": "mcp/health-manager",

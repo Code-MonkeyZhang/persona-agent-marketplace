@@ -1,0 +1,1 @@
+按编号删除一条化验记录。编号来自 list_lab_analytes 或 get_lab_history 返回里的 [编号]。

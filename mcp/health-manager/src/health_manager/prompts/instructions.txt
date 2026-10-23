@@ -1,7 +1,12 @@
-个人身体管理工具，统一管理基础体征（体重/血压/心率/身高/称呼）、饮食（每日食物、卡路里与三大宏量、目标）和健身（运动日记与力量能力）。
+个人身体管理工具，统一管理基础体征（体重/血压/心率/身高/称呼）、饮食（每日食物、卡路里与三大宏量、目标）、健身（运动日记与力量能力）和疾病（化验、影像病理、病历）。
 
 - 体征用 get_body_metrics 查、update_body_metrics 记或改（部分更新，传过去日期可改历史）。
 - 饮食记录支持增删查改：record_diet 新增、get_diet_log 查询（每条带编号）、update_diet 修改（含补填宏量）、delete_diet 删除。
 - 饮食的卡路里和三大宏量（碳水/蛋白质/脂肪）：录入时必填，用户没报数字时根据食物自行估算合理值。
 - 饮食目标用 set_diet_goals 设置（部分更新）、get_diet_goals 查询。
+- 化验用 record_lab_result 批量录入（自动判偏高偏低）、get_lab_history 查指标历史、list_lab_analytes 列指标、update_lab_result / delete_lab_result 按编号改删。
+- 影像病理结论用 record_imaging_finding 录入、get_imaging_history 查询。
+- 病历按日期一文件：get_health_journal 读、update_health_journal 写，写前自动快照。
+- 病史基础是置顶的根基信息，个人基本信息、过敏史、既往病史归属这里：get_health_basics 读、update_health_basics 整篇替换写，不要把它们写成按日期病历。
 - 记录类工具返回和上次或当日累计的对比，直接给用户简短反馈。
+- 疾病模块不做医疗诊断、不给健康决策建议，只记录数据并用大白话描述已记录数据的规律。

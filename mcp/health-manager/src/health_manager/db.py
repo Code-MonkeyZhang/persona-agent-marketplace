@@ -7,22 +7,21 @@ The store is split into per-module tables:
 - strength_records: best-performance points per exercise for the fitness module
 - workout_entries: workout diary entries for the fitness module
 - diet_entries: per-food diet records for the diet module
+- lab_results: per-analyte lab rows for the disease module
+- imaging_findings: dated imaging and pathology conclusions for the disease module
 - settings: simple key-value store for preferences like the diet calorie goal
 
 Schema versioning via PRAGMA user_version enables automatic migration on app
 startup — users updating the app get schema changes applied transparently.
-On first launch (v0 → v1) existing CSV data is imported without modifying the
-original file.
 """
 
 from __future__ import annotations
 
-import csv
-import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .analytes import judge_flag
 from .log import log
 
 _SCHEMA_V1 = """
@@ -97,14 +96,41 @@ _SCHEMA_V5 = "ALTER TABLE workout_entries ADD COLUMN calories INTEGER;"
 
 _SCHEMA_V6 = "ALTER TABLE strength_records ADD COLUMN category TEXT;"
 
+_SCHEMA_V7 = """
+CREATE TABLE IF NOT EXISTS lab_results (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    date          TEXT NOT NULL,
+    specimen      TEXT,
+    category      TEXT NOT NULL,
+    analyte       TEXT NOT NULL,
+    value_num     REAL,
+    value_text    TEXT,
+    unit          TEXT,
+    ref_low       REAL,
+    ref_high      REAL,
+    ref_text      TEXT,
+    abnormal_flag TEXT,
+    note          TEXT,
+    created_at    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS imaging_findings (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    date         TEXT NOT NULL,
+    exam_type    TEXT NOT NULL,
+    finding_text TEXT NOT NULL,
+    image_ref    TEXT,
+    note         TEXT,
+    created_at   TEXT NOT NULL
+);
+"""
+
 _DIET_MEALS = {"breakfast", "lunch", "dinner", "snack"}
 _GOAL_MODES = {"auto", "manual"}
 
 # Macro target share of the calorie goal, and kcal per gram for conversion
 _MACRO_RATIOS = {"carbs": 0.50, "protein": 0.25, "fat": 0.25}
 _KCAL_PER_GRAM = {"carbs": 4, "protein": 4, "fat": 9}
-
-_HEART_RATE_RE = re.compile(r"心率(\d+)")
 
 
 def _now() -> str:
@@ -134,11 +160,11 @@ class HealthDB:
         "macro_goal": (0, 1000),
     }
 
-    def __init__(self, db_path: Path, csv_path: Path | None = None) -> None:
+    def __init__(self, db_path: Path) -> None:
         db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(db_path))
         self._conn.row_factory = sqlite3.Row
-        self._migrate(csv_path)
+        self._migrate()
         log("INFO", "db_ready", path=str(db_path))
 
     @property
@@ -147,19 +173,15 @@ class HealthDB:
 
     # --- Schema migration ---------------------------------------------------
 
-    def _migrate(self, csv_path: Path | None) -> None:
+    def _migrate(self) -> None:
         """Apply schema migrations based on PRAGMA user_version."""
         version = self._conn.execute("PRAGMA user_version").fetchone()[0]
 
         if version < 1:
             self._conn.executescript(_SCHEMA_V1)
             self._conn.execute("PRAGMA user_version = 1")
-            if csv_path and csv_path.exists():
-                count = self._import_csv(csv_path)
-                log("INFO", "db_migrated", version=1, csv_imported=count)
-            else:
-                log("INFO", "db_migrated", version=1, csv_imported=0)
             self._conn.commit()
+            log("INFO", "db_migrated", version=1)
 
         if version < 2:
             self._conn.executescript(_SCHEMA_V2)
@@ -191,30 +213,11 @@ class HealthDB:
             self._conn.commit()
             log("INFO", "db_migrated", version=6)
 
-    def _import_csv(self, csv_path: Path) -> int:
-        """Import existing daily_metrics.csv data. Original file stays untouched."""
-        imported = 0
-        with open(csv_path, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                date = (row.get("日期") or "").strip()
-                if not date:
-                    continue
-                weight = _parse_float(row.get("体重(kg)"))
-                systolic = _parse_int(row.get("收缩压(高压)"))
-                diastolic = _parse_int(row.get("舒张压(低压)"))
-                note = (row.get("备注") or "").strip()
-                heart_rate = None
-                m = _HEART_RATE_RE.search(note)
-                if m:
-                    heart_rate = int(m.group(1))
-                self._conn.execute(
-                    "INSERT OR IGNORE INTO daily_metrics "
-                    "(date, weight, systolic, diastolic, heart_rate, note, created_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (date, weight, systolic, diastolic, heart_rate, note, _now()),
-                )
-                imported += 1
-        return imported
+        if version < 7:
+            self._conn.executescript(_SCHEMA_V7)
+            self._conn.execute("PRAGMA user_version = 7")
+            self._conn.commit()
+            log("INFO", "db_migrated", version=7)
 
     # --- Profile ------------------------------------------------------------
 
@@ -597,6 +600,160 @@ class HealthDB:
             "fat": round(calorie * _MACRO_RATIOS["fat"] / _KCAL_PER_GRAM["fat"]),
         }
 
+    # --- Disease (lab results + imaging findings) ---------------------------
+
+    def record_lab_result(
+        self,
+        date: str,
+        category: str,
+        analyte: str,
+        value_num: float | None = None,
+        value_text: str | None = None,
+        unit: str | None = None,
+        ref_low: float | None = None,
+        ref_high: float | None = None,
+        ref_text: str | None = None,
+        abnormal_flag: str | None = None,
+        specimen: str | None = None,
+        note: str | None = None,
+    ) -> dict:
+        """Insert one lab row and return it with the previous value of the analyte.
+
+        - The caller normalizes the analyte and computes the flag beforehand
+        - prevValueNum / prevValueText / prevDate describe the closest earlier
+          row of the same analyte, so the tool can report the change directly
+        """
+        prev = self._conn.execute(
+            "SELECT date, value_num, value_text FROM lab_results "
+            "WHERE analyte = ? AND date < ? ORDER BY date DESC, id DESC LIMIT 1",
+            (analyte, date),
+        ).fetchone()
+        cur = self._conn.execute(
+            "INSERT INTO lab_results "
+            "(date, specimen, category, analyte, value_num, value_text, unit, "
+            "ref_low, ref_high, ref_text, abnormal_flag, note, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (date, specimen, category, analyte, value_num, value_text, unit,
+             ref_low, ref_high, ref_text, abnormal_flag, note, _now()),
+        )
+        self._conn.commit()
+        row = self._conn.execute(
+            "SELECT * FROM lab_results WHERE id = ?", (cur.lastrowid,)
+        ).fetchone()
+        result = _lab_to_dict(row)
+        if prev is not None:
+            result["prevDate"] = prev["date"]
+            result["prevValueNum"] = prev["value_num"]
+            result["prevValueText"] = prev["value_text"]
+        return result
+
+    def get_lab_history(self, analyte: str, limit: int | None = None) -> list[dict]:
+        """Rows of one analyte ordered by date ascending, newest last."""
+        rows = self._conn.execute(
+            "SELECT * FROM lab_results WHERE analyte = ? ORDER BY date ASC, id ASC",
+            (analyte,),
+        ).fetchall()
+        if limit:
+            rows = rows[-limit:]
+        return [_lab_to_dict(r) for r in rows]
+
+    def get_lab_entries(self) -> list[dict]:
+        """All lab rows ordered by date ascending, for the snapshot and listings."""
+        rows = self._conn.execute(
+            "SELECT * FROM lab_results ORDER BY date ASC, id ASC"
+        ).fetchall()
+        return [_lab_to_dict(r) for r in rows]
+
+    def update_lab_result(self, entry_id: int, **fields) -> dict | None:
+        """Patch a lab row by id and recompute its abnormal flag.
+
+        - Only value_num / value_text / unit / date / note / specimen change,
+          the recorded reference range stays as it was
+        - The flag always comes from judge_flag over the stored range
+        - Returns None when the row does not exist
+        """
+        row = self._conn.execute(
+            "SELECT * FROM lab_results WHERE id = ?", (entry_id,)
+        ).fetchone()
+        if not row:
+            return None
+
+        col_map = {
+            "date": "date",
+            "specimen": "specimen",
+            "value_num": "value_num",
+            "value_text": "value_text",
+            "unit": "unit",
+            "note": "note",
+        }
+        updates = {col_map[k]: v for k, v in fields.items() if k in col_map}
+        if not updates:
+            return _lab_to_dict(row)
+
+        merged = _lab_to_dict(row)
+        out_key = {
+            "date": "date",
+            "specimen": "specimen",
+            "value_num": "valueNum",
+            "value_text": "valueText",
+            "unit": "unit",
+            "note": "note",
+        }
+        for friendly, col in col_map.items():
+            if col in updates:
+                merged[out_key[friendly]] = updates[col]
+        flag = judge_flag(merged["valueNum"], merged["refLow"], merged["refHigh"])
+        updates["abnormal_flag"] = flag
+
+        set_clause = ", ".join(f"{c} = ?" for c in updates)
+        self._conn.execute(
+            f"UPDATE lab_results SET {set_clause} WHERE id = ?",
+            [*updates.values(), entry_id],
+        )
+        self._conn.commit()
+        row = self._conn.execute(
+            "SELECT * FROM lab_results WHERE id = ?", (entry_id,)
+        ).fetchone()
+        return _lab_to_dict(row)
+
+    def delete_lab_result(self, entry_id: int) -> bool:
+        """Delete a lab row by id. Returns whether a row was removed."""
+        cur = self._conn.execute("DELETE FROM lab_results WHERE id = ?", (entry_id,))
+        self._conn.commit()
+        return cur.rowcount > 0
+
+    def record_imaging_finding(
+        self,
+        date: str,
+        exam_type: str,
+        finding_text: str,
+        note: str | None = None,
+    ) -> dict:
+        """Insert one dated imaging or pathology conclusion."""
+        cur = self._conn.execute(
+            "INSERT INTO imaging_findings (date, exam_type, finding_text, note, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (date, exam_type, finding_text, note, _now()),
+        )
+        self._conn.commit()
+        row = self._conn.execute(
+            "SELECT * FROM imaging_findings WHERE id = ?", (cur.lastrowid,)
+        ).fetchone()
+        return _imaging_to_dict(row)
+
+    def get_imaging_entries(self, exam_type: str | None = None) -> list[dict]:
+        """Imaging conclusions ordered by date ascending, optionally filtered."""
+        if exam_type:
+            rows = self._conn.execute(
+                "SELECT * FROM imaging_findings WHERE exam_type = ? ORDER BY date ASC, id ASC",
+                (exam_type,),
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT * FROM imaging_findings ORDER BY date ASC, id ASC"
+            ).fetchall()
+        return [_imaging_to_dict(r) for r in rows]
+
     # --- Snapshot for WebSocket push ---------------------------------------
 
     def get_snapshot(self) -> dict:
@@ -620,6 +777,10 @@ class HealthDB:
             "fitness": {
                 "strengthRecords": self.get_strength_records(),
                 "workouts": self.get_workout_entries(),
+            },
+            "disease": {
+                "labResults": self.get_lab_entries(),
+                "imagingFindings": self.get_imaging_entries(),
             },
         }
 
@@ -702,11 +863,6 @@ class HealthDB:
 # --- Module-level helpers --------------------------------------------------
 
 
-def _parse_float(val: str | None) -> float | None:
-    s = (val or "").strip()
-    return float(s) if s else None
-
-
 def _parse_int(val: str | None) -> int | None:
     s = (val or "").strip()
     return int(s) if s else None
@@ -760,5 +916,34 @@ def _diet_to_dict(row: sqlite3.Row) -> dict:
         "carbs": row["carbs_g"],
         "protein": row["protein_g"],
         "fat": row["fat_g"],
+        "note": row["note"],
+    }
+
+
+def _lab_to_dict(row: sqlite3.Row) -> dict:
+    return {
+        "id": row["id"],
+        "date": row["date"],
+        "specimen": row["specimen"],
+        "category": row["category"],
+        "analyte": row["analyte"],
+        "valueNum": row["value_num"],
+        "valueText": row["value_text"],
+        "unit": row["unit"],
+        "refLow": row["ref_low"],
+        "refHigh": row["ref_high"],
+        "refText": row["ref_text"],
+        "abnormalFlag": row["abnormal_flag"],
+        "note": row["note"],
+    }
+
+
+def _imaging_to_dict(row: sqlite3.Row) -> dict:
+    return {
+        "id": row["id"],
+        "date": row["date"],
+        "examType": row["exam_type"],
+        "findingText": row["finding_text"],
+        "imageRef": row["image_ref"],
         "note": row["note"],
     }

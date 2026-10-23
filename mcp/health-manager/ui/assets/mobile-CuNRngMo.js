@@ -1,0 +1,1 @@
+import{j as e,I as s,B as o,E as r,H as t,T as a,c as n}from"./index-DyeRxmY6.js";function i(){return e.jsxs(s,{children:[e.jsx(o,{basename:r||"/",children:e.jsx(t,{className:"mobile-app"})}),e.jsx(a,{position:"top-center"})]})}n.createRoot(document.getElementById("root")).render(e.jsx(i,{}));
