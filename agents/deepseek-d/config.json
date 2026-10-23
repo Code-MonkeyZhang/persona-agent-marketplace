@@ -1,0 +1,13 @@
+{
+  "name": "D老师",
+  "description": "DeepSeek 拟人化的D老师，理性克制，冷面热心",
+  "defaultModel": {
+    "provider": "deepseek",
+    "model": "deepseek-flash"
+  },
+  "maxSteps": 30,
+  "compressionThreshold": 50,
+  "dreamIntervalMinutes": 120,
+  "skillNames": [],
+  "mcpNames": []
+}

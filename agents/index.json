@@ -30,5 +30,13 @@
   "author": "persona-agent",
   "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/arona-adult",
   "path": "agents/arona-adult"
+ },
+ {
+  "id": "deepseek-d",
+  "name": "D老师",
+  "description": "DeepSeek 拟人化的D老师，理性克制，冷面热心",
+  "author": "persona-agent",
+  "homepage": "https://github.com/Code-MonkeyZhang/persona-agent-marketplace/tree/main/agents/deepseek-d",
+  "path": "agents/deepseek-d"
  }
 ]
