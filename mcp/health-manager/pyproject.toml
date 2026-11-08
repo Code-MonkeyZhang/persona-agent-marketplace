@@ -1,6 +1,6 @@
 [project]
 name = "health-manager"
-version = "0.2.0"
+version = "0.3.0"
 description = "个人健康指标记录 Agent App"
 requires-python = ">=3.10"
 dependencies = [

@@ -34,6 +34,7 @@ from .analytes import (
     ANALYTES,
     GROUP_ORDER,
     check_extreme,
+    dictionary_payload,
     judge_flag,
     normalize_analyte,
     num,
@@ -57,7 +58,7 @@ JOURNAL_SNAPSHOT_DIR = DATA_DIR / "journal_snapshots"
 LOG_PATH = APP_ROOT / "health-manager.log"
 
 SOURCE = "health-manager"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 
 def _read_mock_flag() -> bool:
@@ -1242,6 +1243,7 @@ class HealthServer:
         }
         snap["disease"]["journal"] = self.journal.list_entries()
         snap["disease"]["journalBasics"] = self.journal.read_basics()
+        snap["disease"]["labDictionary"] = dictionary_payload()
         return snap
 
     async def broadcast(self) -> None:
@@ -1694,6 +1696,7 @@ async def run() -> None:
         sys.exit(1)
 
     log_init(LOG_PATH)
+    log("INFO", "dictionary_loaded", items=len(ANALYTES), groups=len(GROUP_ORDER))
 
     server = HealthServer()
     http_app = create_http_app(server)
